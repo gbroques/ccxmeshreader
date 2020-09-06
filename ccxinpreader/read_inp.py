@@ -31,14 +31,16 @@ def read_inp(path: str) -> Result:
         element_set = ''
         generate_element = False
         include_file = None
+        prev_line_num = None
 
         line = True
         while line:
             if include_file:
                 line = include_file.readline()
-                if line == "":
+                if line == '':
                     include_file.close()
                     include_file = None
+                    line_num = prev_line_num + 1
                     line = f.readline()
             else:
                 line = f.readline()
@@ -56,6 +58,8 @@ def read_inp(path: str) -> Result:
                     path_to_include_file = os.path.join(
                         parent_path, params['INPUT'])
                     include_file = open(path_to_include_file)
+                    prev_line_num = line_num + 1
+                    line_num = 0
                 except KeyError:
                     raise_parser_error(
                         '*INCLUDE definition must have INPUT.',
