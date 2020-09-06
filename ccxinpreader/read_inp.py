@@ -1,6 +1,8 @@
 from collections import defaultdict
 from typing import List, Tuple
 
+from .parser_error import ParserError
+
 
 def read_inp(path: str) -> dict:
     """Reads a CalculiX input file.
@@ -25,15 +27,21 @@ def read_inp(path: str) -> dict:
                 previous_element_number = None
                 element_type = ''
             elif is_keyword_with_data(sanitized_line):
+                if sanitized_line.endswith(','):
+                    raise_parser_error(
+                        'Continuation of keyword lines not supported.',
+                        line_num,
+                        sanitized_line)
                 data_type = get_data_type(sanitized_line)
                 keyword, params = parse_keyword_line(sanitized_line)
                 if data_type == 'element':
                     try:
                         element_type = params['TYPE']
                     except KeyError:
-                        msg = 'Element definition on line {} must have TYPE.'
-                        msg += '\n    {}'.format(sanitized_line)
-                        raise ValueError(msg.format(line_num))
+                        raise_parser_error(
+                            'Element definition must have TYPE.',
+                            line_num,
+                            sanitized_line)
             elif data_type:
                 if data_type == 'node':
                     node_number, data = parse_node_data_line(
@@ -68,9 +76,10 @@ def parse_node_data_line(node_data_line: str, line_num: int) -> Tuple[int, List[
     """
     parts = node_data_line.split(',')
     if len(parts) != 4:
-        msg = 'Node on line {} must have 4 parts: number, 1st coord, 2nd coord, 3rd coord.'
-        msg += '\n    {}'.format(node_data_line)
-        raise ValueError(msg.format(line_num))
+        raise_parser_error(
+            'Node must have 4 parts: number, 1st coord, 2nd coord, 3rd coord.',
+            line_num,
+            node_data_line)
     sanitized_parts = sanitize_parts(parts)
     node_number = sanitized_parts[0]
     return int(node_number), [
@@ -208,6 +217,18 @@ def parse_keyword_line(sanitized_line: str) -> Tuple[str, dict]:
         else:
             parameters[part] = True
     return keyword, parameters
+
+
+def raise_parser_error(msg: str, line_num: int, line: str) -> None:
+    """Raise a parser error.
+
+    :param msg: Descriptive error message.
+    :param line_num: Line number on which the parser error occurred.
+    :param line: Line on which the parser error occurred.
+    :raises ParserError: Raise a parser error.
+    """
+    msg += '\n    Line {}: {}'.format(line_num, line)
+    raise ParserError(msg)
 
 
 __all__ = ['read_inp']
