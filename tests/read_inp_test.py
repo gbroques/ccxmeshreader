@@ -14,8 +14,22 @@ class ReadImpTest(unittest.TestCase):
         result = read_inp(path)
 
         self.assertEqual(len(result['nodes'].keys()), 1159)
+        self.assertListEqual(result['nodes'][1], [0, 0, 0])
+        self.assertListEqual(result['nodes'][2], [0, 18, 0])
+        self.assertListEqual(
+            result['nodes'][530], [1.991512192678, 2.992319281912, 0])
+        self.assertListEqual(result['nodes'][1158], [22, 9, 0])
+        self.assertListEqual(result['nodes'][1159], [19, 9, 0])
+
         self.assertEqual(len(result['elements'].keys()), 1)
         self.assertEqual(len(result['elements']['S4'].keys()), 1080)
+        self.assertListEqual(result['elements']['S4']
+                             [157], [193, 283, 392, 282])
+        self.assertListEqual(result['elements']['S4'][179],
+                             [852, 987, 1009, 943])
+        self.assertListEqual(result['elements']['S4'][1132],
+                             [934, 1053, 1128, 1020])
+        self.assertListEqual(result['elements']['S4'][1236], [6, 5, 193, 282])
 
     def test_read_inp_with_continuation_line_element_data(self):
         path = os.path.join(os.path.abspath(
