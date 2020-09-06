@@ -95,7 +95,7 @@ def parse_element_data_line(element_data_line: str, line_num: int) -> List[int]:
         msg = 'Element on line {} must not exceed 16 parts.'
         msg += '\n    {}'.format(element_data_line)
         raise ValueError(msg.format(line_num))
-    return [int(part.strip()) for part in parts]
+    return [int(part.strip() or 0) for part in parts]
 
 
 def sanitize_line(line: str) -> str:

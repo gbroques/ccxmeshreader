@@ -17,9 +17,9 @@ class ReadImpTest(unittest.TestCase):
         self.assertEqual(len(result['elements'].keys()), 1)
         self.assertEqual(len(result['elements']['S4'].keys()), 1080)
 
-    def test_read_inp_with_multi_line_element_data(self):
+    def test_read_inp_with_continuation_line_element_data(self):
         path = os.path.join(os.path.abspath(
-            os.path.dirname(__file__)), 'multi-line-element.inp')
+            os.path.dirname(__file__)), 'continuation-line-element.inp')
 
         result = read_inp(path)
 
@@ -35,7 +35,7 @@ class ReadImpTest(unittest.TestCase):
         self.assertEqual(len(result['elements']['C3D20R'].keys()), 1)
         self.assertListEqual(
             result['elements']['C3D20R'][1],
-            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
 
 
 if __name__ == '__main__':
