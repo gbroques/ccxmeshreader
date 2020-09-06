@@ -1,0 +1,47 @@
+
+**
+**   Structure: disk with plate.
+**   Test objective: combination of axisymmetric elements with
+**                   plane stress elements.
+**
+*NODE, NSET=Nall
+       1,  2.00000e+00, -7.45058e-09,  0.00000e+00 
+       2,  2.00000e+00,  1.00000e+00,  0.00000e+00 
+       3,  1.00000e+00,  1.00000e+00,  0.00000e+00 
+       4,  1.00000e+00, -7.45058e-09,  0.00000e+00 
+       5,  2.00000e+00,  5.00000e-01,  0.00000e+00 
+       6,  1.50000e+00,  1.00000e+00,  0.00000e+00 
+       7,  1.00000e+00,  5.00000e-01,  0.00000e+00 
+       8,  1.50000e+00, -7.45058e-09,  0.00000e+00 
+       9,  3.00000e+00, -7.45058e-09,  0.00000e+00 
+      10,  3.00000e+00,  1.00000e+00,  0.00000e+00 
+      11,  3.00000e+00,  5.00000e-01,  0.00000e+00 
+      12,  2.50000e+00,  1.00000e+00,  0.00000e+00 
+      13,  2.50000e+00, -7.45058e-09,  0.00000e+00 
+14, 0, 10, 0
+15, 0, 11, 0
+16, 0, 12, 0
+17, 0, 13, 0
+18, 0, 14, 0
+19, 0, 15, 0
+20, 0, 16, 0
+
+** The following is an example of a number element spanning multiple lines.
+*ELEMENT,ELSET=Eall,TYPE=C3D20R
+1,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
+16,17,18,19,20
+
+*MATERIAL,NAME=EL
+*ELASTIC
+210000.,.3
+*SOLID SECTION,ELSET=Eall,MATERIAL=EL
+0.1
+*BOUNDARY
+7,2
+*STEP,NLGEOM
+*STATIC
+*DLOAD
+2,P1,-100.
+*EL PRINT,ELSET=Eall
+S,E
+*END STEP

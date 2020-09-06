@@ -15,7 +15,7 @@ def read_inp(path: str) -> dict:
         line = f.readline()
         line_num = 1
         data_type = ''
-        multi_line_data = False
+        previous_element_number = None
         while line:
             sanitized_line = sanitize_line(line)
             if (sanitized_line == '' or is_keyword(sanitized_line)) and data_type:
@@ -38,13 +38,21 @@ def read_inp(path: str) -> dict:
                     ]
                 elif data_type == 'element':
                     parts = sanitized_line.split(',')
+                    if sanitized_line.endswith(','):
+                        parts = parts[:-1]
                     if len(parts) > 16:
                         msg = 'Element on line {} must not exceed 16 parts.'
                         msg += '\n    {}'.format(sanitized_line)
                         raise ValueError(msg.format(line_num))
                     sanitized_parts = sanitize_parts(parts)
                     element_number = sanitized_parts[0]
-                    result['elements'][element_number] = sanitized_parts[1:]
+                    if not previous_element_number:
+                        result['elements'][element_number] = sanitized_parts[1:]
+                    else:
+                        result['elements'][previous_element_number] = sanitized_parts[1:]
+                        previous_element_number = None
+                    if sanitized_line.endswith(','):
+                        previous_element_number = element_number
             line = f.readline()
             line_num += 1
     return result
