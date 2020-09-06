@@ -27,19 +27,11 @@ def read_inp(path: str) -> dict:
                     node_number, data = parse_node(sanitized_line, line_num)
                     result['nodes'][node_number] = data
                 elif data_type == 'element':
-                    parts = sanitized_line.split(',')
-                    if sanitized_line.endswith(','):
-                        parts = parts[:-1]
-                    if len(parts) > 16:
-                        msg = 'Element on line {} must not exceed 16 parts.'
-                        msg += '\n    {}'.format(sanitized_line)
-                        raise ValueError(msg.format(line_num))
-                    sanitized_parts = sanitize_parts(parts)
-                    element_number = sanitized_parts[0]
-                    if not previous_element_number:
-                        result['elements'][element_number] = sanitized_parts[1:]
-                    else:
-                        result['elements'][previous_element_number] = sanitized_parts[1:]
+                    element_number, data = parse_element(
+                        sanitized_line, line_num)
+                    element_index = previous_element_number if previous_element_number else element_number
+                    result['elements'][element_index] = data
+                    if previous_element_number:
                         previous_element_number = None
                     if sanitized_line.endswith(','):
                         previous_element_number = element_number
@@ -64,11 +56,32 @@ def parse_node(node_data_line: str, line_num: int) -> Tuple[int, List[float]]:
         raise ValueError(msg.format(line_num))
     sanitized_parts = sanitize_parts(parts)
     node_number = sanitized_parts[0]
-    return node_number, [
+    return int(node_number), [
         float(sanitized_parts[1]),
         float(sanitized_parts[2]),
         float(sanitized_parts[3])
     ]
+
+
+def parse_element(element_data_line: str, line_num: int) -> Tuple[str, List[str]]:
+    """Parse a element from an element data line.
+
+    :param element_data_line: Sanitized element data line.
+    :param line_num: Line number.
+    :raises ValueError: When number of comma-separated parts exceeds 16.
+    :return: Two-element tuple containing element number,
+             and list of node numbers associated to element.
+    """
+    parts = element_data_line.split(',')
+    if element_data_line.endswith(','):
+        parts = parts[:-1]
+    if len(parts) > 16:
+        msg = 'Element on line {} must not exceed 16 parts.'
+        msg += '\n    {}'.format(element_data_line)
+        raise ValueError(msg.format(line_num))
+    sanitized_parts = sanitize_parts(parts)
+    element_number = sanitized_parts[0]
+    return element_number, sanitized_parts[1:]
 
 
 def sanitize_line(line: str) -> str:
