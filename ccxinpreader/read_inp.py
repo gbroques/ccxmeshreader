@@ -12,20 +12,25 @@ def read_inp(path: str) -> dict:
     """
     result = {
         'nodes': {},
-        'elements': defaultdict(dict)
+        'elements': defaultdict(dict),
+        'element_sets': defaultdict(set)
     }
     with open(path, 'r') as f:
         line = f.readline()
         line_num = 1
+
+        # mutable variables
         data_type = ''
         previous_element_number = None
         element_type = ''
+        element_set = ''
         while line:
             sanitized_line = sanitize_line(line)
             if (sanitized_line == '' or is_keyword(sanitized_line)) and data_type:
                 data_type = ''
                 previous_element_number = None
                 element_type = ''
+                element_set = ''
             elif is_keyword_with_data(sanitized_line):
                 if sanitized_line.endswith(','):
                     raise_parser_error(
@@ -34,6 +39,8 @@ def read_inp(path: str) -> dict:
                         sanitized_line)
                 data_type = get_data_type(sanitized_line)
                 keyword, params = parse_keyword_line(sanitized_line)
+                if 'ELSET' in params:
+                    element_set = params['ELSET']
                 if data_type == 'element':
                     try:
                         element_type = params['TYPE']
@@ -58,6 +65,8 @@ def read_inp(path: str) -> dict:
                         element_number = element_data[0]
                         node_numbers = element_data[1:]
                         result['elements'][element_type][element_number] = node_numbers
+                        if element_set:
+                            result['element_sets'][element_set].add(element_number)
                     if sanitized_line.endswith(','):
                         previous_element_number = element_number
             line = f.readline()
