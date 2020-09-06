@@ -29,9 +29,12 @@ def read_inp(path: str) -> dict:
                 elif data_type == 'element':
                     element_number, data = parse_element(
                         sanitized_line, line_num)
-                    element_index = previous_element_number if previous_element_number else element_number
-                    result['elements'][element_index] = data
-                    if previous_element_number:
+                    if not previous_element_number:
+                        result['elements'][element_number] = data
+                    else:
+                        result['elements'][previous_element_number].append(element_number)
+                        result['elements'][previous_element_number].extend(
+                            data)
                         previous_element_number = None
                     if sanitized_line.endswith(','):
                         previous_element_number = element_number
@@ -81,7 +84,7 @@ def parse_element(element_data_line: str, line_num: int) -> Tuple[int, List[str]
         raise ValueError(msg.format(line_num))
     sanitized_parts = sanitize_parts(parts)
     element_number = sanitized_parts[0]
-    return int(element_number), sanitized_parts[1:]
+    return int(element_number), [int(node_number) for node_number in sanitized_parts[1:]]
 
 
 def sanitize_line(line: str) -> str:

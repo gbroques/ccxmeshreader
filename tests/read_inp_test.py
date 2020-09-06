@@ -31,6 +31,9 @@ class ReadImpTest(unittest.TestCase):
             [2.50000e+00, -7.45058e-09,  0.00000e+00])
 
         self.assertEqual(len(result['elements'].keys()), 1)
+        self.assertListEqual(
+            result['elements'][1],
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
 
 
 if __name__ == '__main__':
