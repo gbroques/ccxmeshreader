@@ -63,7 +63,7 @@ def parse_node(node_data_line: str, line_num: int) -> Tuple[int, List[float]]:
     ]
 
 
-def parse_element(element_data_line: str, line_num: int) -> Tuple[str, List[str]]:
+def parse_element(element_data_line: str, line_num: int) -> Tuple[int, List[str]]:
     """Parse a element from an element data line.
 
     :param element_data_line: Sanitized element data line.
@@ -81,7 +81,7 @@ def parse_element(element_data_line: str, line_num: int) -> Tuple[str, List[str]
         raise ValueError(msg.format(line_num))
     sanitized_parts = sanitize_parts(parts)
     element_number = sanitized_parts[0]
-    return element_number, sanitized_parts[1:]
+    return int(element_number), sanitized_parts[1:]
 
 
 def sanitize_line(line: str) -> str:
