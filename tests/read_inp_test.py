@@ -14,12 +14,12 @@ class ReadImpTest(unittest.TestCase):
         result = read_inp(path)
 
         self.assertEqual(len(result['nodes'].keys()), 1159)
-        self.assertListEqual(result['nodes'][1], [0, 0, 0])
-        self.assertListEqual(result['nodes'][2], [0, 18, 0])
-        self.assertListEqual(
-            result['nodes'][530], [1.991512192678, 2.992319281912, 0])
-        self.assertListEqual(result['nodes'][1158], [22, 9, 0])
-        self.assertListEqual(result['nodes'][1159], [19, 9, 0])
+        self.assertTupleEqual(result['nodes'][1], (0, 0, 0))
+        self.assertTupleEqual(result['nodes'][2], (0, 18, 0))
+        self.assertTupleEqual(
+            result['nodes'][530], (1.991512192678, 2.992319281912, 0))
+        self.assertTupleEqual(result['nodes'][1158], (22, 9, 0))
+        self.assertTupleEqual(result['nodes'][1159], (19, 9, 0))
 
         self.assertEqual(len(result['elements'].keys()), 1)
         self.assertEqual(len(result['elements']['S4'].keys()), 1080)
@@ -38,8 +38,10 @@ class ReadImpTest(unittest.TestCase):
         self.assertTrue(1132 in result['element_sets']['EFACES'])
         self.assertTrue(1236 in result['element_sets']['EFACES'])
 
-        self.assertTrue(result['element_sets']['EALL'] == result['element_sets']['EFACES'])
-        self.assertTrue(result['element_sets']['SOLIDMATERIALELEMENTGEOMETRY2D'] == result['element_sets']['EFACES'])
+        self.assertTrue(result['element_sets']['EALL'] ==
+                        result['element_sets']['EFACES'])
+        self.assertTrue(result['element_sets']['SOLIDMATERIALELEMENTGEOMETRY2D']
+                        == result['element_sets']['EFACES'])
 
     def test_read_inp_with_continuation_line_element_data(self):
         path = os.path.join(os.path.abspath(
@@ -48,12 +50,12 @@ class ReadImpTest(unittest.TestCase):
         result = read_inp(path)
 
         self.assertEqual(len(result['nodes'].keys()), 20)
-        self.assertListEqual(
+        self.assertTupleEqual(
             result['nodes'][1],
-            [2.00000e+00, -7.45058e-09,  0.00000e+00])
-        self.assertListEqual(
+            (2.00000e+00, -7.45058e-09,  0.00000e+00))
+        self.assertTupleEqual(
             result['nodes'][13],
-            [2.50000e+00, -7.45058e-09,  0.00000e+00])
+            (2.50000e+00, -7.45058e-09,  0.00000e+00))
 
         self.assertEqual(len(result['elements'].keys()), 1)
         self.assertEqual(len(result['elements']['C3D20R'].keys()), 1)
@@ -66,6 +68,7 @@ class ReadImpTest(unittest.TestCase):
         self.assertEqual(result['element_sets']['E2'], {1, 2, 3, 4, 5, 6, 7})
         self.assertEqual(result['element_sets']['E3'], {1, 3, 5, 7})
         self.assertEqual(result['element_sets']['E4'], {20})
+
 
 if __name__ == '__main__':
     unittest.main()
