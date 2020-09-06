@@ -1,10 +1,16 @@
 from collections import defaultdict
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Tuple, TypedDict, Set
 
 from .parser_error import ParserError
 
 
-def read_inp(path: str) -> dict:
+class Result(TypedDict):
+    nodes: Dict[int, Tuple[float, float, float]]
+    elements: Dict[str, Dict[int, List[int]]]
+    element_sets: Dict[str, Set[int]]
+
+
+def read_inp(path: str) -> Result:
     """Reads a CalculiX input file.
 
     :param path: Path to CalculiX input file.
@@ -121,7 +127,7 @@ def read_inp(path: str) -> dict:
     return result
 
 
-def parse_node_data_line(node_data_line: str, line_num: int) -> Tuple[int, List[float]]:
+def parse_node_data_line(node_data_line: str, line_num: int) -> Tuple[int, Tuple[float, float, float]]:
     """Parse a node from a node data line.
 
     :param node_data_line: Sanitized node data line.
@@ -138,11 +144,11 @@ def parse_node_data_line(node_data_line: str, line_num: int) -> Tuple[int, List[
             node_data_line)
     sanitized_parts = sanitize_parts(parts)
     node_number = sanitized_parts[0]
-    return int(node_number), [
+    return int(node_number), (
         float(sanitized_parts[1]),
         float(sanitized_parts[2]),
         float(sanitized_parts[3])
-    ]
+    )
 
 
 def parse_element_data_line(element_data_line: str, line_num: int) -> List[int]:
