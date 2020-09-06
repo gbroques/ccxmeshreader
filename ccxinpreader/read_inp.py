@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import List, Tuple
 
 
@@ -9,33 +10,46 @@ def read_inp(path: str) -> dict:
     """
     result = {
         'nodes': {},
-        'elements': {}
+        'elements': defaultdict(dict)
     }
     with open(path, 'r') as f:
         line = f.readline()
         line_num = 1
         data_type = ''
         previous_element_number = None
+        element_type = ''
         while line:
             sanitized_line = sanitize_line(line)
             if (sanitized_line == '' or is_keyword(sanitized_line)) and data_type:
                 data_type = ''
+                previous_element_number = None
+                element_type = ''
             elif is_keyword_with_data(sanitized_line):
                 data_type = get_data_type(sanitized_line)
+                keyword, params = parse_keyword_line(sanitized_line)
+                if data_type == 'element':
+                    try:
+                        element_type = params['TYPE']
+                    except KeyError:
+                        msg = 'Element definition on line {} must have TYPE.'
+                        msg += '\n    {}'.format(sanitized_line)
+                        raise ValueError(msg.format(line_num))
             elif data_type:
                 if data_type == 'node':
-                    node_number, data = parse_node_data_line(sanitized_line, line_num)
+                    node_number, data = parse_node_data_line(
+                        sanitized_line, line_num)
                     result['nodes'][node_number] = data
                 elif data_type == 'element':
-                    element_data = parse_element_data_line(sanitized_line, line_num)
+                    element_data = parse_element_data_line(
+                        sanitized_line, line_num)
                     if previous_element_number is not None:
-                        result['elements'][previous_element_number].extend(
+                        result['elements'][element_type][previous_element_number].extend(
                             element_data)
                         previous_element_number = None
                     else:
                         element_number = element_data[0]
                         node_numbers = element_data[1:]
-                        result['elements'][element_number] = node_numbers
+                        result['elements'][element_type][element_number] = node_numbers
                     if sanitized_line.endswith(','):
                         previous_element_number = element_number
             line = f.readline()
@@ -170,6 +184,30 @@ def get_data_type(sanitized_keyword_line: str) -> str:
     for data_type, predicate in predicate_by_data_type.items():
         if predicate(sanitized_keyword_line):
             return data_type
+
+
+def parse_keyword_line(sanitized_line: str) -> Tuple[str, dict]:
+    """Parses a keyword line for the keyword and any parameters.
+
+    Parameters without an explicit value
+    are returned in the dictionary with a value of True.
+
+    :param sanitized_line: Upper-cased line without surrounding white-space.
+    :return: Two element tuple containing keyword and parameters.
+    """
+    parameters = {}
+    if ',' not in sanitized_line:
+        return sanitized_line, parameters
+    parts = sanitized_line.split(',')
+    keyword = parts[0]
+    remaining_parts = parts[1:]
+    for part in remaining_parts:
+        if '=' in part:
+            key, value = sanitize_parts(part.split('='))
+            parameters[key] = value
+        else:
+            parameters[part] = True
+    return keyword, parameters
 
 
 __all__ = ['read_inp']
