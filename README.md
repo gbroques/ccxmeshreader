@@ -9,6 +9,12 @@ from ccxinputreader import read_inp
 result = read_inp('path/to/some.inp')
 ```
 
+## Supported Keywords
+Currently, only parsing the following keywords is supported:
+* `*NODE`
+* `*ELEMENT`
+* `*ELSET`
+
 ## Limitations
 Currently only supports parsing meshes, where a mesh consists of nodes connected by elements.
 
