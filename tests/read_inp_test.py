@@ -62,7 +62,10 @@ class ReadImpTest(unittest.TestCase):
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
 
         self.assertEqual(result['element_sets']['EALL'], {1})
-
+        self.assertEqual(result['element_sets']['E1'], {1, 2, 3, 4, 5})
+        self.assertEqual(result['element_sets']['E2'], {1, 2, 3, 4, 5, 6, 7})
+        self.assertEqual(result['element_sets']['E3'], {1, 3, 5, 7})
+        self.assertEqual(result['element_sets']['E4'], {20})
 
 if __name__ == '__main__':
     unittest.main()

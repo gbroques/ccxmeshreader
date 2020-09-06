@@ -24,6 +24,7 @@ def read_inp(path: str) -> dict:
         previous_element_number = None
         element_type = ''
         element_set = ''
+        generate_element = False
         while line:
             sanitized_line = sanitize_line(line)
             if (sanitized_line == '' or is_keyword(sanitized_line)) and data_type_to_read:
@@ -31,6 +32,7 @@ def read_inp(path: str) -> dict:
                 previous_element_number = None
                 element_type = ''
                 element_set = ''
+                generate_element = False
             elif is_keyword_with_data(sanitized_line):
                 if sanitized_line.endswith(','):
                     raise_parser_error(
@@ -41,6 +43,8 @@ def read_inp(path: str) -> dict:
                 keyword, params = parse_keyword_line(sanitized_line)
                 if 'ELSET' in params:
                     element_set = params['ELSET']
+                if 'GENERATE' in params:
+                    generate_element = True
                 if data_type_to_read == 'element':
                     try:
                         element_type = params['TYPE']
@@ -74,6 +78,44 @@ def read_inp(path: str) -> dict:
                     if ',' not in sanitized_line:
                         if sanitized_line in result['element_sets']:
                             result['element_sets'][element_set] = result['element_sets'][sanitized_line]
+                        else:
+                            element = int(sanitized_line)
+                            result['element_sets'][element_set].add(element)
+                    else:
+                        parts = sanitized_line.split(',')
+                        if generate_element:
+                            num_parts = len(parts)
+                            if 2 < num_parts > 3:
+                                raise_parser_error(
+                                    'GENERATE data line must contain 2 or 3 elements.',
+                                    line_num,
+                                    sanitized_line)
+                            if num_parts == 2:
+                                start = int(parts[0])
+                                end = int(parts[1])
+                                elements = {e for e in range(start, end + 1)}
+                                result['element_sets'][element_set] = elements
+                            else:
+                                start = int(parts[0])
+                                end = int(parts[1])
+                                step = int(parts[2])
+                                elements = {e for e in range(
+                                    start, end + 1, step)}
+                                result['element_sets'][element_set] = elements
+                            generate_element = False
+                        else:
+                            for part in parts:
+                                if part in result['element_sets']:
+                                    if len(result['element_sets'][element_set]) == 0:
+                                        result['element_sets'][element_set] = result['element_sets'][part].copy(
+                                        )
+                                    else:
+                                        result['element_sets'][element_set] = result['element_sets'][element_set].union(
+                                            result['element_sets'][part])
+                                else:
+                                    element = int(part)
+                                    result['element_sets'][element_set].add(
+                                        element)
             line = f.readline()
             line_num += 1
     return result
