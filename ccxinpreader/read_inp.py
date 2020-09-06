@@ -1,6 +1,6 @@
 from collections import defaultdict
 from typing import Callable, Dict, List, Tuple, TypedDict, Set
-
+import os
 from .parser_error import ParserError
 
 
@@ -22,7 +22,6 @@ def read_inp(path: str) -> Result:
         'element_sets': defaultdict(set)
     }
     with open(path, 'r') as f:
-        line = f.readline()
         line_num = 1
 
         # mutable variables
@@ -31,7 +30,18 @@ def read_inp(path: str) -> Result:
         element_type = ''
         element_set = ''
         generate_element = False
+        include_file = None
+
+        line = True
         while line:
+            if include_file:
+                line = include_file.readline()
+                if line == "":
+                    include_file.close()
+                    include_file = None
+                    line = f.readline()
+            else:
+                line = f.readline()
             sanitized_line = sanitize_line(line)
             if (sanitized_line == '' or is_keyword(sanitized_line)) and data_type_to_read:
                 data_type_to_read = ''
@@ -39,6 +49,18 @@ def read_inp(path: str) -> Result:
                 element_type = ''
                 element_set = ''
                 generate_element = False
+            elif sanitized_line.startswith('*INCLUDE'):
+                keyword, params = parse_keyword_line(line.strip())
+                parent_path = os.path.abspath(os.path.join(path, os.pardir))
+                try:
+                    path_to_include_file = os.path.join(
+                        parent_path, params['INPUT'])
+                    include_file = open(path_to_include_file)
+                except KeyError:
+                    raise_parser_error(
+                        '*INCLUDE definition must have INPUT.',
+                        line_num,
+                        sanitized_line)
             elif is_keyword_with_data(sanitized_line):
                 if sanitized_line.endswith(','):
                     raise_parser_error(
@@ -56,7 +78,7 @@ def read_inp(path: str) -> Result:
                         element_type = params['TYPE']
                     except KeyError:
                         raise_parser_error(
-                            'Element definition must have TYPE.',
+                            '*ELEMENT definition must have TYPE.',
                             line_num,
                             sanitized_line)
             elif data_type_to_read:
@@ -122,7 +144,6 @@ def read_inp(path: str) -> Result:
                                     element = int(part)
                                     result['element_sets'][element_set].add(
                                         element)
-            line = f.readline()
             line_num += 1
     return result
 
@@ -277,7 +298,7 @@ def parse_keyword_line(sanitized_line: str) -> Tuple[str, dict]:
     Parameters without an explicit value
     are returned in the dictionary with a value of True.
 
-    :param sanitized_line: Upper-cased line without surrounding white-space.
+    :param sanitized_line: Line without surrounding white-space.
     :return: Two element tuple containing keyword and parameters.
     """
     parameters = {}

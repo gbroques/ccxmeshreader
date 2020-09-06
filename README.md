@@ -14,6 +14,7 @@ Currently, only parsing the following keywords is supported:
 * `*NODE`
 * `*ELEMENT`
 * `*ELSET`
+* `*INCLUDE`
 
 ## Limitations
 Currently only supports parsing meshes, where a mesh consists of nodes connected by elements.
