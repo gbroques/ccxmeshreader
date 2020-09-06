@@ -14,29 +14,37 @@ def read_inp(path: str) -> dict:
     with open(path, 'r') as f:
         line = f.readline()
         line_num = 1
-        read_node = False
+        data_type = ''
+        multi_line_data = False
         while line:
             sanitized_line = sanitize_line(line)
-            if is_node_definition(sanitized_line):
-                read_node = True
-            elif (
-                (sanitized_line == '' or sanitized_line.startswith('*')) and
-                (read_node and not is_node_definition(sanitized_line))
-            ):
-                read_node = False
-            elif read_node:
-                parts = line.split(',')
-                if len(parts) != 4:
-                    msg = 'Node on line {} must have 4 parts: number, 1st coord, 2nd coord, 3rd coord.'
-                    msg += '\n    {}'.format(sanitized_line)
-                    raise ValueError(msg.format(line_num))
-                sanitized_parts = sanitize_parts(parts)
-                node_number = sanitized_parts[0]
-                result['nodes'][node_number] = [
-                    sanitized_parts[1],
-                    sanitized_parts[2],
-                    sanitized_parts[3]
-                ]
+            if (sanitized_line == '' or is_keyword(sanitized_line)) and data_type:
+                data_type = ''
+            elif is_keyword_with_data(sanitized_line):
+                data_type = get_data_type(sanitized_line)
+            elif data_type:
+                if data_type == 'node':
+                    parts = sanitized_line.split(',')
+                    if len(parts) != 4:
+                        msg = 'Node on line {} must have 4 parts: number, 1st coord, 2nd coord, 3rd coord.'
+                        msg += '\n    {}'.format(sanitized_line)
+                        raise ValueError(msg.format(line_num))
+                    sanitized_parts = sanitize_parts(parts)
+                    node_number = sanitized_parts[0]
+                    result['nodes'][node_number] = [
+                        sanitized_parts[1],
+                        sanitized_parts[2],
+                        sanitized_parts[3]
+                    ]
+                elif data_type == 'element':
+                    parts = sanitized_line.split(',')
+                    if len(parts) > 16:
+                        msg = 'Element on line {} must not exceed 16 parts.'
+                        msg += '\n    {}'.format(sanitized_line)
+                        raise ValueError(msg.format(line_num))
+                    sanitized_parts = sanitize_parts(parts)
+                    element_number = sanitized_parts[0]
+                    result['elements'][element_number] = sanitized_parts[1:]
             line = f.readline()
             line_num += 1
     return result
@@ -64,6 +72,34 @@ def sanitize_parts(parts: List[str]) -> List[str]:
     return [part.strip() for part in parts]
 
 
+def is_keyword(sanitized_line: str) -> bool:
+    """Checks if a sanitized line is a keyword definition.
+
+    Keywords in CalculiX input files start with an asterisk '*',
+    and comments start with two asterisks '**'.
+
+    :param sanitized_line: Upper-cased line without surrounding white-space.
+    :return: True if the line is a keyword definition, False otherwise.
+    """
+    return (
+        sanitized_line.startswith('*') and not
+        sanitized_line.startswith('**')
+    )
+
+
+def is_keyword_with_data(sanitized_line: str) -> bool:
+    """Checks if a sanitized line is a keyword definition.
+
+    Keywords in CalculiX input files start with an asterisk '*',
+    and comments start with two asterisks '**'.
+
+    :param sanitized_line: Upper-cased line without surrounding white-space.
+    :return: True if the line is a keyword definition, False otherwise.
+    """
+    predicates = [is_node_definition, is_element_definition]
+    return any([predicate(sanitized_line) for predicate in predicates])
+
+
 def is_node_definition(sanitized_line: str) -> bool:
     """Checks if a sanitized line is a node definition.
 
@@ -78,6 +114,28 @@ def is_node_definition(sanitized_line: str) -> bool:
             sanitized_line.startswith('*NODE PRINT')
         )
     )
+
+
+def is_element_definition(sanitized_line: str) -> bool:
+    """Checks if a sanitized line is an element definition.
+
+    :param sanitized_line: Upper-cased line without surrounding white-space.
+    :return: True if the line is an element definition, False otherwise.
+    """
+    return (
+        sanitized_line.startswith('*ELEMENT') and not
+        sanitized_line.startswith('*ELEMENT OUTPUT')
+    )
+
+
+def get_data_type(sanitized_keyword_line: str) -> str:
+    predicate_by_data_type = {
+        'node': is_node_definition,
+        'element': is_element_definition
+    }
+    for data_type, predicate in predicate_by_data_type.items():
+        if predicate(sanitized_keyword_line):
+            return data_type
 
 
 __all__ = ['read_inp']

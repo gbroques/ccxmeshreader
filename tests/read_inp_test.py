@@ -14,6 +14,7 @@ class ImportImpTest(unittest.TestCase):
         result = read_inp(path)
 
         self.assertEqual(len(result['nodes'].keys()), 1159)
+        self.assertEqual(len(result['elements'].keys()), 1080)
 
 
 if __name__ == '__main__':
