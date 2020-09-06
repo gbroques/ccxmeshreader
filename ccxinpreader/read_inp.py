@@ -32,9 +32,9 @@ def read_inp(path: str) -> dict:
                     sanitized_parts = sanitize_parts(parts)
                     node_number = sanitized_parts[0]
                     result['nodes'][node_number] = [
-                        sanitized_parts[1],
-                        sanitized_parts[2],
-                        sanitized_parts[3]
+                        float(sanitized_parts[1]),
+                        float(sanitized_parts[2]),
+                        float(sanitized_parts[3])
                     ]
                 elif data_type == 'element':
                     parts = sanitized_line.split(',')

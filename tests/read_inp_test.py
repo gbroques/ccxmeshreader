@@ -23,8 +23,14 @@ class ReadImpTest(unittest.TestCase):
         result = read_inp(path)
 
         self.assertEqual(len(result['nodes'].keys()), 20)
-        self.assertEqual(len(result['elements'].keys()), 1)
+        self.assertListEqual(
+            result['nodes']['1'],
+            [2.00000e+00, -7.45058e-09,  0.00000e+00])
+        self.assertListEqual(
+            result['nodes']['13'],
+            [2.50000e+00, -7.45058e-09,  0.00000e+00])
 
+        self.assertEqual(len(result['elements'].keys()), 1)
 
 
 if __name__ == '__main__':
