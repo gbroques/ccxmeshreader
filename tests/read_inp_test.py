@@ -38,6 +38,9 @@ class ReadImpTest(unittest.TestCase):
         self.assertTrue(1132 in result['element_sets']['EFACES'])
         self.assertTrue(1236 in result['element_sets']['EFACES'])
 
+        self.assertTrue(result['element_sets']['EALL'] == result['element_sets']['EFACES'])
+        self.assertTrue(result['element_sets']['SOLIDMATERIALELEMENTGEOMETRY2D'] == result['element_sets']['EFACES'])
+
     def test_read_inp_with_continuation_line_element_data(self):
         path = os.path.join(os.path.abspath(
             os.path.dirname(__file__)), 'continuation-line-element.inp')
