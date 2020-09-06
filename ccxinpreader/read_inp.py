@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 
 def read_inp(path: str) -> dict:
@@ -24,18 +24,8 @@ def read_inp(path: str) -> dict:
                 data_type = get_data_type(sanitized_line)
             elif data_type:
                 if data_type == 'node':
-                    parts = sanitized_line.split(',')
-                    if len(parts) != 4:
-                        msg = 'Node on line {} must have 4 parts: number, 1st coord, 2nd coord, 3rd coord.'
-                        msg += '\n    {}'.format(sanitized_line)
-                        raise ValueError(msg.format(line_num))
-                    sanitized_parts = sanitize_parts(parts)
-                    node_number = sanitized_parts[0]
-                    result['nodes'][node_number] = [
-                        float(sanitized_parts[1]),
-                        float(sanitized_parts[2]),
-                        float(sanitized_parts[3])
-                    ]
+                    node_number, data = parse_node(sanitized_line, line_num)
+                    result['nodes'][node_number] = data
                 elif data_type == 'element':
                     parts = sanitized_line.split(',')
                     if sanitized_line.endswith(','):
@@ -56,6 +46,29 @@ def read_inp(path: str) -> dict:
             line = f.readline()
             line_num += 1
     return result
+
+
+def parse_node(node_data_line: str, line_num: int) -> Tuple[int, List[float]]:
+    """Parse a node from a node data line.
+
+    :param node_data_line: Sanitized node data line.
+    :param line_num: Line number.
+    :raises ValueError: When number of comma-separated parts doesn't equal 4.
+    :return: Two-element tuple containing node number,
+             and list of node coordinate values.
+    """
+    parts = node_data_line.split(',')
+    if len(parts) != 4:
+        msg = 'Node on line {} must have 4 parts: number, 1st coord, 2nd coord, 3rd coord.'
+        msg += '\n    {}'.format(node_data_line)
+        raise ValueError(msg.format(line_num))
+    sanitized_parts = sanitize_parts(parts)
+    node_number = sanitized_parts[0]
+    return node_number, [
+        float(sanitized_parts[1]),
+        float(sanitized_parts[2]),
+        float(sanitized_parts[3])
+    ]
 
 
 def sanitize_line(line: str) -> str:
