@@ -24,18 +24,18 @@ def read_inp(path: str) -> dict:
                 data_type = get_data_type(sanitized_line)
             elif data_type:
                 if data_type == 'node':
-                    node_number, data = parse_node(sanitized_line, line_num)
+                    node_number, data = parse_node_data_line(sanitized_line, line_num)
                     result['nodes'][node_number] = data
                 elif data_type == 'element':
-                    elements = parse_element(sanitized_line, line_num)
+                    element_data = parse_element_data_line(sanitized_line, line_num)
                     if previous_element_number is not None:
                         result['elements'][previous_element_number].extend(
-                            elements)
+                            element_data)
                         previous_element_number = None
                     else:
-                        element_number = elements[0]
-                        data = elements[:-1]
-                        result['elements'][element_number] = data
+                        element_number = element_data[0]
+                        node_numbers = element_data[1:]
+                        result['elements'][element_number] = node_numbers
                     if sanitized_line.endswith(','):
                         previous_element_number = element_number
             line = f.readline()
@@ -43,7 +43,7 @@ def read_inp(path: str) -> dict:
     return result
 
 
-def parse_node(node_data_line: str, line_num: int) -> Tuple[int, List[float]]:
+def parse_node_data_line(node_data_line: str, line_num: int) -> Tuple[int, List[float]]:
     """Parse a node from a node data line.
 
     :param node_data_line: Sanitized node data line.
@@ -66,8 +66,8 @@ def parse_node(node_data_line: str, line_num: int) -> Tuple[int, List[float]]:
     ]
 
 
-def parse_element(element_data_line: str, line_num: int) -> List[int]:
-    """Parse element from an element data line.
+def parse_element_data_line(element_data_line: str, line_num: int) -> List[int]:
+    """Parse element data from an element data line.
 
     :param element_data_line: Sanitized element data line.
     :param line_num: Line number.
@@ -81,7 +81,6 @@ def parse_element(element_data_line: str, line_num: int) -> List[int]:
         msg = 'Element on line {} must not exceed 16 parts.'
         msg += '\n    {}'.format(element_data_line)
         raise ValueError(msg.format(line_num))
-    # sanitized_parts = sanitize_parts(parts)
     return [int(part.strip()) for part in parts]
 
 
