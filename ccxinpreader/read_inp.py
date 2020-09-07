@@ -131,7 +131,7 @@ def read_inp(path: str) -> Result:
                         parts = sanitized_line.split(',')
                         if generate_element:
                             num_parts = len(parts)
-                            if 2 < num_parts > 3:
+                            if not 2 <= num_parts <= 3:
                                 raise_parser_error(
                                     'GENERATE data line must contain 2 or 3 elements.',
                                     line_num,
