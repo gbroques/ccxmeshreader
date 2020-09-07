@@ -73,8 +73,9 @@ print(result['elements'])
 
 ---
 
-If the `ELSET` parameter is provided, then the element set will be added to the `element_sets` dictionary return in the result of `read_inp` with the corresponding element numbers.
+If the `ELSET` parameter is provided, then the element set will be added to the `element_sets` dictionary returned in the result of `read_inp` with the corresponding element numbers.
 
+For example, from the above `*ELEMENT` definition:
 ```python
 result = read_inp('example.inp')
 print(result['element_sets'])
@@ -88,8 +89,9 @@ print(result['element_sets'])
 ### *ELSET
 Element set definitions are parsed and added to the dictionary returned by `read_inp` in the `element_sets` key.
 
-The `elements` key contains a dictionary where the key is the name of the element set, and value is a set of element numbers.
+The `element_sets` key contains a dictionary where the key is the name of the element set, and value is a set of element numbers.
 
+For example, given the following `*ELEMENT` and `*ELSET` definitions:
 ```
 *ELEMENT, TYPE=S4, ELSET=E1
 1, 1, 2, 3,
