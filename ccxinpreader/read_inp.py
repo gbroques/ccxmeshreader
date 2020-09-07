@@ -1,6 +1,7 @@
-from collections import defaultdict
-from typing import Callable, Dict, List, Tuple, TypedDict, Set
 import os
+from collections import defaultdict
+from typing import Callable, Dict, List, Set, Tuple, TypedDict
+
 from .parser_error import ParserError
 
 
@@ -13,8 +14,21 @@ class Result(TypedDict):
 def read_inp(path: str) -> Result:
     """Reads a CalculiX input file.
 
+    Nodes are returned in a dictionary under the nodes key,
+    where the key is the node number,
+    and value is the coordinates as a three-element tuple.
+
+    Elements are returned in a dictionary under elements key,
+    where the key is the element type.
+    The value is a dictionary where the key is element numbers,
+    and value is a list of node numbers associated to the element.
+
+    Element sets are returned in a dictionary under the element_sets key,
+    where the key is the name of the element set,
+    and value is a set of element numbers.
+
     :param path: Path to CalculiX input file.
-    :return: a dictionary with nodes and elements.
+    :return: a dictionary with nodes, elements, and element sets.
     """
     result = {
         'nodes': {},
