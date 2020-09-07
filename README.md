@@ -3,10 +3,10 @@
 * [Introduction](#introduction)
 * [Usage](#usage)
 * [Supported Keywords](#supported-keywords)
-    * [*NODE](#*node)
-    * [*ELEMENT](#*element)
-    * [*ELSET](#*elset)
-    * [*INCLUDE](#*include)
+    * [*NODE](#node)
+    * [*ELEMENT](#element)
+    * [*ELSET](#elset)
+    * [*INCLUDE](#include)
 * [Unit Tests](#unit-tests)
 
 ## Introduction
