@@ -7,6 +7,7 @@
     * [*ELEMENT](#element)
     * [*ELSET](#elset)
     * [*INCLUDE](#include)
+* [Limitations](#limitations)
 * [Unit Tests](#unit-tests)
 
 ## Introduction
@@ -121,6 +122,18 @@ The optional `GENERATE` parameter is respected with start, end, and step.
 Files specified by the `*INCLUDE` keyword are read, but currently limited to relative file paths, and assumed to be relative to the path passed to `read_mesh`.
 
 Recursive includes (i.e. `*INCLUDE` statements in a previously included file) are not yet supported.
+
+## Limitations
+Continuation of keyword lines is not supported.
+
+For example, trying to read the following `.inp` file:
+
+```
+*ELEMENT, TYPE=C3D20R,
+ELSET=Eall
+```
+
+Will raise a `ccxmeshread.ParserError`.
 
 ## Unit Tests
 Unit tests are included in the `tests/` directory, and can be ran with the following command:

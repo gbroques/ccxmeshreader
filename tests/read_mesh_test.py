@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from ccxmeshreader import read_mesh
+from ccxmeshreader import ParserError, read_mesh
 
 
 class ReadMeshTest(unittest.TestCase):
@@ -68,6 +68,15 @@ class ReadMeshTest(unittest.TestCase):
         self.assertEqual(mesh['element_sets']['E2'], {1, 2, 3, 4, 5, 6, 7})
         self.assertEqual(mesh['element_sets']['E3'], {1, 3, 5, 7})
         self.assertEqual(mesh['element_sets']['E4'], {20})
+
+    def test_read_mesh_with_continuation_keyword_line_raises_parser_error(self):
+        path = os.path.join(os.path.abspath(
+            os.path.dirname(__file__)), 'continuation-keyword-line.inp')
+
+        with self.assertRaises(ParserError) as context:
+            read_mesh(path)
+            self.assertEqual(
+                'Continuation of keyword lines not supported.', context.exception)
 
 
 if __name__ == '__main__':
