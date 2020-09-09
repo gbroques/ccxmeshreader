@@ -1,17 +1,24 @@
 import os
 from collections import defaultdict
-from typing import Callable, Dict, List, Set, Tuple, TypedDict
+from typing import Callable, Dict, List, Set, Tuple
 
 from .parser_error import ParserError
 
+try:
+    from typing import TypedDict  # >=3.8
+    MeshType = TypedDict
+except ImportError:
+    from typing import NamedTuple  # <=3.7
+    MeshType = NamedTuple
 
-class Result(TypedDict):
+
+class Mesh(MeshType):
     nodes: Dict[int, Tuple[float, float, float]]
     elements: Dict[str, Dict[int, List[int]]]
     element_sets: Dict[str, Set[int]]
 
 
-def read_inp(path: str) -> Result:
+def read_mesh(path: str) -> Mesh:
     """Reads a CalculiX input file.
 
     Nodes are returned in a dictionary under the nodes key,
@@ -346,4 +353,4 @@ def raise_parser_error(msg: str, line_num: int, line: str) -> None:
     raise ParserError(msg)
 
 
-__all__ = ['read_inp']
+__all__ = ['read_mesh']

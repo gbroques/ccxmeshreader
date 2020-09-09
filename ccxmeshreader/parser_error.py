@@ -1,6 +1,6 @@
 class ParserError(Exception):
     """
-    Raised when encountering error parsing file contents.
+    Raised when encountering an error parsing file contents.
     """
 
 

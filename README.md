@@ -1,4 +1,4 @@
-# ccxinpreader
+# ccxmeshreader
 
 * [Introduction](#introduction)
 * [Usage](#usage)
@@ -10,22 +10,22 @@
 * [Unit Tests](#unit-tests)
 
 ## Introduction
-Reads CalcluliX input (`.inp`) files.
+Reads a mesh from CalcluliX input (`.inp`) files.
 
-Currently only supports a limited set of model definition keywords defining the mesh. See [Supported Keywords](#supported-keywords) for details.
+Only supports a limited set of keywords defining the mesh. See [Supported Keywords](#supported-keywords) for details.
 
 ## Usage
 ```python
-from ccxinputreader import read_inp
+from ccxmeshreader import read_mesh
 
 
-result = read_inp('path/to/some.inp')
+mesh = read_mesh('path/to/some.inp')
 ```
 
 ## Supported Keywords
 
 ### *NODE
-Nodes and their coordinates are parsed and added to the dictionary returned by `read_inp` in the `nodes` key.
+Nodes and their coordinates are parsed and added to the dictionary returned by `read_mesh` in the `nodes` key.
 
 The `nodes` key contains a dictionary where the key is the node number, and value is the coordinates as a three-element tuple with float values.
 
@@ -37,8 +37,8 @@ For example, given the following `*NODE` definition:
 3,  0.9, 5.0, 7.0
 ```
 ```python
-result = read_inp('example.inp')
-print(result['nodes'])
+mesh = read_mesh('example.inp')
+print(mesh['nodes'])
 ```
 ```
 {
@@ -51,7 +51,7 @@ print(result['nodes'])
 Currently node sets are not supported, and the optional `NSET` parameter is ignored.
 
 ### *ELEMENT
-Elements and their associated nodes are parsed and added to the dictionary returned by `read_inp` in the `elements` key.
+Elements and their associated nodes are parsed and added to the dictionary returned by `read_mesh` in the `elements` key.
 
 The `elements` key contains a dictionary where the key is the element type, and value is a list of node numbers associated to the element.
 
@@ -62,8 +62,8 @@ For example, given the following `*ELEMENT` definition:
 2,  4, 5, 6
 ```
 ```python
-result = read_inp('example.inp')
-print(result['elements'])
+mesh = read_mesh('example.inp')
+print(mesh['elements'])
 ```
 ```
 {
@@ -73,12 +73,12 @@ print(result['elements'])
 
 ---
 
-If the `ELSET` parameter is provided, then the element set will be added to the `element_sets` dictionary returned in the result of `read_inp` with the corresponding element numbers.
+If the `ELSET` parameter is provided, then the element set will be added to the `element_sets` dictionary returned in the mesh of `read_mesh` with the corresponding element numbers.
 
 For example, from the above `*ELEMENT` definition:
 ```python
-result = read_inp('example.inp')
-print(result['element_sets'])
+mesh = read_mesh('example.inp')
+print(mesh['element_sets'])
 ```
 ```
 {
@@ -87,7 +87,7 @@ print(result['element_sets'])
 ```
 
 ### *ELSET
-Element set definitions are parsed and added to the dictionary returned by `read_inp` in the `element_sets` key.
+Element set definitions are parsed and added to the dictionary returned by `read_mesh` in the `element_sets` key.
 
 The `element_sets` key contains a dictionary where the key is the name of the element set, and value is a set of element numbers.
 
@@ -105,8 +105,8 @@ For example, given the following `*ELEMENT` and `*ELSET` definitions:
 E2, 5, 6
 ```
 ```python
-result = read_inp('example.inp')
-print(result['element_sets'])
+mesh = read_mesh('example.inp')
+print(mesh['element_sets'])
 ```
 ```
 {
@@ -118,7 +118,7 @@ print(result['element_sets'])
 The optional `GENERATE` parameter is respected with start, end, and step.
 
 ### *INCLUDE
-Files specified by the `*INCLUDE` keyword are read, but currently limited to relative file paths, and assumed to be relative to the path passed to `read_inp`.
+Files specified by the `*INCLUDE` keyword are read, but currently limited to relative file paths, and assumed to be relative to the path passed to `read_mesh`.
 
 Recursive includes (i.e. `*INCLUDE` statements in a previously included file) are not yet supported.
 
