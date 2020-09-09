@@ -7,6 +7,7 @@
     * [*ELEMENT](#element)
     * [*ELSET](#elset)
     * [*INCLUDE](#include)
+* [Approach](#approach)
 * [Limitations](#limitations)
 * [Unit Tests](#unit-tests)
 
@@ -122,6 +123,13 @@ The optional `GENERATE` parameter is respected with start, end, and step.
 Files specified by the `*INCLUDE` keyword are read, but currently limited to relative file paths, and assumed to be relative to the path passed to `read_mesh`.
 
 Recursive includes (i.e. `*INCLUDE` statements in a previously included file) are not yet supported.
+
+## Approach
+The approach this library takes is to read the `.inp` file in a `while` loop, line-by-line, until there are no lines left, and collect the nodes and elements that make up the mesh into a dictionary.
+
+It does not use an intermediate step of parsing the `.inp` file into an abstract syntax tree -- as doing so would be costly and likely involve a parsing library.
+
+Thus, `ccxmeshreader` can be considered light-weight and performant.
 
 ## Limitations
 Continuation of keyword lines is not supported.
