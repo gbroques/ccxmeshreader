@@ -141,7 +141,7 @@ For example, trying to read the following `.inp` file:
 ELSET=Eall
 ```
 
-Will raise a `ccxmeshread.ParserError`.
+raises a `ccxmeshreader.ParserError`.
 
 ## Unit Tests
 Unit tests are included in the `tests/` directory, and can be ran with the following command:
