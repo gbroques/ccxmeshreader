@@ -1,5 +1,7 @@
 # ccxmeshreader
 
+[![PyPI version](https://badge.fury.io/py/ccxmeshreader.svg)](https://badge.fury.io/py/ccxmeshreader)
+[![Conda version](https://anaconda.org/gbroques/ccxmeshreader/badges/version.svg)](https://anaconda.org/gbroques/ccxmeshreader)
 [![Build Status](https://travis-ci.org/gbroques/ccxmeshreader.svg?branch=master)](https://travis-ci.org/gbroques/ccxmeshreader)
 
 * [Introduction](#introduction)
