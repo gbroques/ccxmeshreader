@@ -1,0 +1,10 @@
+# Travis CI Build Configuration File
+#
+# Reference:
+#   https://docs.travis-ci.com/user/customizing-the-build/
+#
+language: python
+python:
+  - '3.8'
+script:
+    - python -m unittest discover tests "*_test.py"
