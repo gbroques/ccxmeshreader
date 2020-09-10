@@ -1,5 +1,7 @@
 # ccxmeshreader
 
+[![Build Status](https://travis-ci.org/gbroques/ccxmeshreader.svg?branch=master)](https://travis-ci.org/gbroques/ccxmeshreader)
+
 * [Introduction](#introduction)
 * [Usage](#usage)
 * [Supported Keywords](#supported-keywords)
