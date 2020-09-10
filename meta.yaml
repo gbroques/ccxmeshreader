@@ -1,0 +1,39 @@
+{% set data = load_setup_py_data(setup_file='./setup.py', from_recipe_dir=True) %}
+
+package:
+  name: {{ data.name }}
+  version: {{ data.version }}
+
+source:
+  path: ../ccxmeshreader
+
+build:
+  number: 0
+  script: "{{ PYTHON }} -m pip install . -vv"
+  noarch: python
+
+requirements:
+  host:
+    - pip
+    - python
+
+  run:
+    - python
+    {% for package in data.install_requires %}
+    - {{ package }}
+    {% endfor %}
+
+test:
+  imports:
+    - ccxmeshreader
+
+about:
+  home: https://github.com/gbroques/ccxmeshreader
+  license: GNU General Public License v2 or later (GPLv2+)
+  license_file: LICENSE
+  summary: "Reads a mesh from CalcluliX input (.inp) files."
+  dev_url: https://github.com/gbroques/ccxmeshreader
+
+extra:
+  recipe-maintainers:
+    - gbroques
