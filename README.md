@@ -57,9 +57,10 @@ print(mesh['node_coordinates_by_number'])
 Currently node sets are not supported, and the optional `NSET` parameter is ignored.
 
 ### *ELEMENT
-Elements and their associated nodes are parsed and added to the dictionary returned by `read_mesh` in the `elements` key.
+Elements and their associated nodes are parsed and added to the dictionary returned by `read_mesh` in the `element_dict_by_type` key.
 
-The `elements` key contains a dictionary where the key is the element type, and value is a list of node numbers associated to the element.
+The `element_dict_by_type` key contains a dictionary where the key is the element type, and value is another dictionary where the key is the element number,
+and value is a list of node numbers associated to the element.
 
 For example, given the following `*ELEMENT` definition:
 ```
@@ -69,11 +70,35 @@ For example, given the following `*ELEMENT` definition:
 ```
 ```python
 mesh = read_mesh('example.inp')
-print(mesh['elements'])
+print(mesh['element_dict_by_type'])
 ```
 ```
 {
-    'C3D20R': [1, 2, 3, 4, 5, 6]
+    'C3D20R': {
+        1: [1, 2, 3]
+        2: [4, 5, 6]
+    }
+}
+```
+
+Continuation of data-lines ending with a comma `,` is supported. For example:
+
+```
+*ELEMENT, TYPE=C3D20R, ELSET=Eall
+1,  1, 2, 3,
+    4, 5, 6
+2,  7, 8, 9
+```
+```python
+mesh = read_mesh('example.inp')
+print(mesh['element_dict_by_type'])
+```
+```
+{
+    'C3D20R': {
+        1: [1, 2, 3, 4, 5, 6]
+        2: [7, 8, 9]
+    }
 }
 ```
 

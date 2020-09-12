@@ -24,15 +24,15 @@ class ReadMeshTest(unittest.TestCase):
         self.assertTupleEqual(
             mesh['node_coordinates_by_number'][1159], (19, 9, 0))
 
-        self.assertEqual(len(mesh['elements'].keys()), 1)
-        self.assertEqual(len(mesh['elements']['S4'].keys()), 1080)
-        self.assertListEqual(mesh['elements']['S4'][157],
+        self.assertEqual(len(mesh['element_dict_by_type'].keys()), 1)
+        self.assertEqual(len(mesh['element_dict_by_type']['S4'].keys()), 1080)
+        self.assertListEqual(mesh['element_dict_by_type']['S4'][157],
                              [193, 283, 392, 282])
-        self.assertListEqual(mesh['elements']['S4'][179],
+        self.assertListEqual(mesh['element_dict_by_type']['S4'][179],
                              [852, 987, 1009, 943])
-        self.assertListEqual(mesh['elements']['S4'][1132],
+        self.assertListEqual(mesh['element_dict_by_type']['S4'][1132],
                              [934, 1053, 1128, 1020])
-        self.assertListEqual(mesh['elements']['S4'][1236],
+        self.assertListEqual(mesh['element_dict_by_type']['S4'][1236],
                              [6, 5, 193, 282])
 
         self.assertTrue('EFACES' in mesh['element_sets'])
@@ -60,10 +60,10 @@ class ReadMeshTest(unittest.TestCase):
             mesh['node_coordinates_by_number'][13],
             (2.50000e+00, -7.45058e-09,  0.00000e+00))
 
-        self.assertEqual(len(mesh['elements'].keys()), 1)
-        self.assertEqual(len(mesh['elements']['C3D20R'].keys()), 1)
+        self.assertEqual(len(mesh['element_dict_by_type'].keys()), 1)
+        self.assertEqual(len(mesh['element_dict_by_type']['C3D20R'].keys()), 1)
         self.assertListEqual(
-            mesh['elements']['C3D20R'][1],
+            mesh['element_dict_by_type']['C3D20R'][1],
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
 
         self.assertEqual(mesh['element_sets']['EALL'], {1})

@@ -14,7 +14,7 @@ except ImportError:
 
 class Mesh(MeshType):
     node_coordinates_by_number: Dict[int, Tuple[float, float, float]]
-    elements: Dict[str, Dict[int, List[int]]]
+    element_dict_by_type: Dict[str, Dict[int, List[int]]]
     element_sets: Dict[str, Set[int]]
 
 
@@ -25,7 +25,7 @@ def read_mesh(path: str) -> Mesh:
     where the key is the node number,
     and value is the coordinates as a three-element tuple.
 
-    Elements are returned in a dictionary under elements key,
+    Elements are returned in a dictionary under the element_dict_by_type key,
     where the key is the element type.
     The value is a dictionary where the key is element numbers,
     and value is a list of node numbers associated to the element.
@@ -39,7 +39,7 @@ def read_mesh(path: str) -> Mesh:
     """
     result = {
         'node_coordinates_by_number': {},
-        'elements': defaultdict(dict),
+        'element_dict_by_type': defaultdict(dict),
         'element_sets': defaultdict(set)
     }
     with open(path, 'r') as f:
@@ -115,13 +115,13 @@ def read_mesh(path: str) -> Mesh:
                     element_data = parse_element_data_line(
                         sanitized_line, line_num)
                     if previous_element_number is not None:
-                        result['elements'][element_type][previous_element_number].extend(
+                        result['element_dict_by_type'][element_type][previous_element_number].extend(
                             element_data)
                         previous_element_number = None
                     else:
                         element_number = element_data[0]
                         node_numbers = element_data[1:]
-                        result['elements'][element_type][element_number] = node_numbers
+                        result['element_dict_by_type'][element_type][element_number] = node_numbers
                         if element_set:
                             result['element_sets'][element_set].add(
                                 element_number)
