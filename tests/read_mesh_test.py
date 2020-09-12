@@ -13,13 +13,16 @@ class ReadMeshTest(unittest.TestCase):
 
         mesh = read_mesh(path)
 
-        self.assertEqual(len(mesh['nodes'].keys()), 1159)
-        self.assertTupleEqual(mesh['nodes'][1], (0, 0, 0))
-        self.assertTupleEqual(mesh['nodes'][2], (0, 18, 0))
+        self.assertEqual(len(mesh['node_coordinates_by_number'].keys()), 1159)
+        self.assertTupleEqual(mesh['node_coordinates_by_number'][1], (0, 0, 0))
         self.assertTupleEqual(
-            mesh['nodes'][530], (1.991512192678, 2.992319281912, 0))
-        self.assertTupleEqual(mesh['nodes'][1158], (22, 9, 0))
-        self.assertTupleEqual(mesh['nodes'][1159], (19, 9, 0))
+            mesh['node_coordinates_by_number'][2], (0, 18, 0))
+        self.assertTupleEqual(
+            mesh['node_coordinates_by_number'][530], (1.991512192678, 2.992319281912, 0))
+        self.assertTupleEqual(
+            mesh['node_coordinates_by_number'][1158], (22, 9, 0))
+        self.assertTupleEqual(
+            mesh['node_coordinates_by_number'][1159], (19, 9, 0))
 
         self.assertEqual(len(mesh['elements'].keys()), 1)
         self.assertEqual(len(mesh['elements']['S4'].keys()), 1080)
@@ -49,12 +52,12 @@ class ReadMeshTest(unittest.TestCase):
 
         mesh = read_mesh(path)
 
-        self.assertEqual(len(mesh['nodes'].keys()), 20)
+        self.assertEqual(len(mesh['node_coordinates_by_number'].keys()), 20)
         self.assertTupleEqual(
-            mesh['nodes'][1],
+            mesh['node_coordinates_by_number'][1],
             (2.00000e+00, -7.45058e-09,  0.00000e+00))
         self.assertTupleEqual(
-            mesh['nodes'][13],
+            mesh['node_coordinates_by_number'][13],
             (2.50000e+00, -7.45058e-09,  0.00000e+00))
 
         self.assertEqual(len(mesh['elements'].keys()), 1)

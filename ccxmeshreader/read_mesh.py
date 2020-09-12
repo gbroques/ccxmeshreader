@@ -13,7 +13,7 @@ except ImportError:
 
 
 class Mesh(MeshType):
-    nodes: Dict[int, Tuple[float, float, float]]
+    node_coordinates_by_number: Dict[int, Tuple[float, float, float]]
     elements: Dict[str, Dict[int, List[int]]]
     element_sets: Dict[str, Set[int]]
 
@@ -21,7 +21,7 @@ class Mesh(MeshType):
 def read_mesh(path: str) -> Mesh:
     """Reads a CalculiX input file.
 
-    Nodes are returned in a dictionary under the nodes key,
+    Nodes are returned in a dictionary under the node_coordinates_by_number key,
     where the key is the node number,
     and value is the coordinates as a three-element tuple.
 
@@ -38,7 +38,7 @@ def read_mesh(path: str) -> Mesh:
     :return: a dictionary with nodes, elements, and element sets.
     """
     result = {
-        'nodes': {},
+        'node_coordinates_by_number': {},
         'elements': defaultdict(dict),
         'element_sets': defaultdict(set)
     }
@@ -108,9 +108,9 @@ def read_mesh(path: str) -> Mesh:
                             sanitized_line)
             elif data_type_to_read:
                 if data_type_to_read == 'node':
-                    node_number, data = parse_node_data_line(
+                    node_number, coordinates = parse_node_data_line(
                         sanitized_line, line_num)
-                    result['nodes'][node_number] = data
+                    result['node_coordinates_by_number'][node_number] = coordinates
                 elif data_type_to_read == 'element':
                     element_data = parse_element_data_line(
                         sanitized_line, line_num)

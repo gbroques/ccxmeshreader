@@ -31,9 +31,9 @@ mesh = read_mesh('path/to/some.inp')
 ## Supported Keywords
 
 ### *NODE
-Nodes and their coordinates are parsed and added to the dictionary returned by `read_mesh` in the `nodes` key.
+Nodes and their coordinates are parsed and added to the dictionary returned by `read_mesh` in the `node_coordinates_by_number` key.
 
-The `nodes` key contains a dictionary where the key is the node number, and value is the coordinates as a three-element tuple with float values.
+The `node_coordinates_by_number` key contains a dictionary where the key is the node number, and value is the coordinates as a three-element tuple with float values.
 
 For example, given the following `*NODE` definition:
 ```
@@ -44,7 +44,7 @@ For example, given the following `*NODE` definition:
 ```
 ```python
 mesh = read_mesh('example.inp')
-print(mesh['nodes'])
+print(mesh['node_coordinates_by_number'])
 ```
 ```
 {
