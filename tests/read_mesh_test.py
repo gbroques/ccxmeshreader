@@ -35,16 +35,16 @@ class ReadMeshTest(unittest.TestCase):
         self.assertListEqual(mesh['element_dict_by_type']['S4'][1236],
                              [6, 5, 193, 282])
 
-        self.assertTrue('EFACES' in mesh['element_sets'])
-        self.assertTrue(157 in mesh['element_sets']['EFACES'])
-        self.assertTrue(179 in mesh['element_sets']['EFACES'])
-        self.assertTrue(1132 in mesh['element_sets']['EFACES'])
-        self.assertTrue(1236 in mesh['element_sets']['EFACES'])
+        self.assertTrue('EFACES' in mesh['element_set_by_name'])
+        self.assertTrue(157 in mesh['element_set_by_name']['EFACES'])
+        self.assertTrue(179 in mesh['element_set_by_name']['EFACES'])
+        self.assertTrue(1132 in mesh['element_set_by_name']['EFACES'])
+        self.assertTrue(1236 in mesh['element_set_by_name']['EFACES'])
 
-        self.assertTrue(mesh['element_sets']['EALL'] ==
-                        mesh['element_sets']['EFACES'])
-        self.assertTrue(mesh['element_sets']['SOLIDMATERIALELEMENTGEOMETRY2D']
-                        == mesh['element_sets']['EFACES'])
+        self.assertTrue(mesh['element_set_by_name']['EALL'] ==
+                        mesh['element_set_by_name']['EFACES'])
+        self.assertTrue(mesh['element_set_by_name']['SOLIDMATERIALELEMENTGEOMETRY2D']
+                        == mesh['element_set_by_name']['EFACES'])
 
     def test_read_mesh_with_continuation_line_element_data(self):
         path = os.path.join(os.path.abspath(
@@ -66,11 +66,11 @@ class ReadMeshTest(unittest.TestCase):
             mesh['element_dict_by_type']['C3D20R'][1],
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
 
-        self.assertEqual(mesh['element_sets']['EALL'], {1})
-        self.assertEqual(mesh['element_sets']['E1'], {1, 2, 3, 4, 5})
-        self.assertEqual(mesh['element_sets']['E2'], {1, 2, 3, 4, 5, 6, 7})
-        self.assertEqual(mesh['element_sets']['E3'], {1, 3, 5, 7})
-        self.assertEqual(mesh['element_sets']['E4'], {20})
+        self.assertEqual(mesh['element_set_by_name']['EALL'], {1})
+        self.assertEqual(mesh['element_set_by_name']['E1'], {1, 2, 3, 4, 5})
+        self.assertEqual(mesh['element_set_by_name']['E2'], {1, 2, 3, 4, 5, 6, 7})
+        self.assertEqual(mesh['element_set_by_name']['E3'], {1, 3, 5, 7})
+        self.assertEqual(mesh['element_set_by_name']['E4'], {20})
 
     def test_read_mesh_with_continuation_keyword_line_raises_parser_error(self):
         path = os.path.join(os.path.abspath(

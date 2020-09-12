@@ -104,12 +104,12 @@ print(mesh['element_dict_by_type'])
 
 ---
 
-If the `ELSET` parameter is provided, then the element set will be added to the `element_sets` dictionary returned in the mesh of `read_mesh` with the corresponding element numbers.
+If the `ELSET` parameter is provided, then the element set will be added to the `element_set_by_name` dictionary returned in the mesh of `read_mesh` with the corresponding element numbers.
 
 For example, from the above `*ELEMENT` definition:
 ```python
 mesh = read_mesh('example.inp')
-print(mesh['element_sets'])
+print(mesh['element_set_by_name'])
 ```
 ```
 {
@@ -118,9 +118,9 @@ print(mesh['element_sets'])
 ```
 
 ### *ELSET
-Element set definitions are parsed and added to the dictionary returned by `read_mesh` in the `element_sets` key.
+Element set definitions are parsed and added to the dictionary returned by `read_mesh` in the `element_set_by_name` key.
 
-The `element_sets` key contains a dictionary where the key is the name of the element set, and value is a set of element numbers.
+The `element_set_by_name` key contains a dictionary where the key is the name of the element set, and value is a set of element numbers.
 
 For example, given the following `*ELEMENT` and `*ELSET` definitions:
 ```
@@ -137,7 +137,7 @@ E2, 5, 6
 ```
 ```python
 mesh = read_mesh('example.inp')
-print(mesh['element_sets'])
+print(mesh['element_set_by_name'])
 ```
 ```
 {

@@ -15,7 +15,7 @@ except ImportError:
 class Mesh(MeshType):
     node_coordinates_by_number: Dict[int, Tuple[float, float, float]]
     element_dict_by_type: Dict[str, Dict[int, List[int]]]
-    element_sets: Dict[str, Set[int]]
+    element_set_by_name: Dict[str, Set[int]]
 
 
 def read_mesh(path: str) -> Mesh:
@@ -30,7 +30,7 @@ def read_mesh(path: str) -> Mesh:
     The value is a dictionary where the key is element numbers,
     and value is a list of node numbers associated to the element.
 
-    Element sets are returned in a dictionary under the element_sets key,
+    Element sets are returned in a dictionary under the element_set_by_name key,
     where the key is the name of the element set,
     and value is a set of element numbers.
 
@@ -40,7 +40,7 @@ def read_mesh(path: str) -> Mesh:
     result = {
         'node_coordinates_by_number': {},
         'element_dict_by_type': defaultdict(dict),
-        'element_sets': defaultdict(set)
+        'element_set_by_name': defaultdict(set)
     }
     with open(path, 'r') as f:
         line_num = 1
@@ -123,17 +123,17 @@ def read_mesh(path: str) -> Mesh:
                         node_numbers = element_data[1:]
                         result['element_dict_by_type'][element_type][element_number] = node_numbers
                         if element_set:
-                            result['element_sets'][element_set].add(
+                            result['element_set_by_name'][element_set].add(
                                 element_number)
                     if sanitized_line.endswith(','):
                         previous_element_number = element_number
                 elif data_type_to_read == 'element_set':
                     if ',' not in sanitized_line:
-                        if sanitized_line in result['element_sets']:
-                            result['element_sets'][element_set] = result['element_sets'][sanitized_line]
+                        if sanitized_line in result['element_set_by_name']:
+                            result['element_set_by_name'][element_set] = result['element_set_by_name'][sanitized_line]
                         else:
                             element = int(sanitized_line)
-                            result['element_sets'][element_set].add(element)
+                            result['element_set_by_name'][element_set].add(element)
                     else:
                         parts = sanitized_line.split(',')
                         if generate_element:
@@ -147,27 +147,27 @@ def read_mesh(path: str) -> Mesh:
                                 start = int(parts[0])
                                 end = int(parts[1])
                                 elements = {e for e in range(start, end + 1)}
-                                result['element_sets'][element_set] = elements
+                                result['element_set_by_name'][element_set] = elements
                             else:
                                 start = int(parts[0])
                                 end = int(parts[1])
                                 step = int(parts[2])
                                 elements = {e for e in range(
                                     start, end + 1, step)}
-                                result['element_sets'][element_set] = elements
+                                result['element_set_by_name'][element_set] = elements
                             generate_element = False
                         else:
                             for part in parts:
-                                if part in result['element_sets']:
-                                    if len(result['element_sets'][element_set]) == 0:
-                                        result['element_sets'][element_set] = result['element_sets'][part].copy(
+                                if part in result['element_set_by_name']:
+                                    if len(result['element_set_by_name'][element_set]) == 0:
+                                        result['element_set_by_name'][element_set] = result['element_set_by_name'][part].copy(
                                         )
                                     else:
-                                        result['element_sets'][element_set] = result['element_sets'][element_set].union(
-                                            result['element_sets'][part])
+                                        result['element_set_by_name'][element_set] = result['element_set_by_name'][element_set].union(
+                                            result['element_set_by_name'][part])
                                 else:
                                     element = int(part)
-                                    result['element_sets'][element_set].add(
+                                    result['element_set_by_name'][element_set].add(
                                         element)
             line_num += 1
     return result
