@@ -65,15 +65,16 @@ def read_mesh(path: str) -> Mesh:
                     line = f.readline()
             else:
                 line = f.readline()
-            sanitized_line = sanitize_line(line)
-            if (sanitized_line == '' or is_keyword(sanitized_line)) and data_type_to_read:
+            stripped_line = line.strip()
+            uppercase_stripped_line = stripped_line.upper()
+            if (stripped_line == '' or is_keyword(uppercase_stripped_line)) and data_type_to_read:
                 data_type_to_read = ''
                 previous_element_number = None
                 element_type = ''
                 element_set = ''
                 generate_element = False
-            elif sanitized_line.startswith('*INCLUDE'):
-                keyword, params = parse_keyword_line(line.strip())
+            elif uppercase_stripped_line.startswith('*INCLUDE'):
+                keyword, params = parse_keyword_line(stripped_line)
                 parent_path = os.path.abspath(os.path.join(path, os.pardir))
                 try:
                     path_to_include_file = os.path.join(
@@ -85,15 +86,15 @@ def read_mesh(path: str) -> Mesh:
                     raise_parser_error(
                         '*INCLUDE definition must have INPUT.',
                         line_num,
-                        sanitized_line)
-            elif is_keyword_with_data(sanitized_line):
-                if sanitized_line.endswith(','):
+                        stripped_line)
+            elif is_keyword_with_data(uppercase_stripped_line):
+                if stripped_line.endswith(','):
                     raise_parser_error(
                         'Continuation of keyword lines not supported.',
                         line_num,
-                        sanitized_line)
-                data_type_to_read = get_data_type(sanitized_line)
-                keyword, params = parse_keyword_line(sanitized_line)
+                        stripped_line)
+                data_type_to_read = get_data_type(uppercase_stripped_line)
+                keyword, params = parse_keyword_line(stripped_line)
                 if 'ELSET' in params:
                     element_set = params['ELSET']
                 if 'GENERATE' in params:
@@ -105,15 +106,15 @@ def read_mesh(path: str) -> Mesh:
                         raise_parser_error(
                             '*ELEMENT definition must have TYPE.',
                             line_num,
-                            sanitized_line)
+                            stripped_line)
             elif data_type_to_read:
                 if data_type_to_read == 'node':
                     node_number, coordinates = parse_node_data_line(
-                        sanitized_line, line_num)
+                        stripped_line, line_num)
                     result['node_coordinates_by_number'][node_number] = coordinates
                 elif data_type_to_read == 'element':
                     element_data = parse_element_data_line(
-                        sanitized_line, line_num)
+                        stripped_line, line_num)
                     if previous_element_number is not None:
                         result['element_dict_by_type'][element_type][previous_element_number].extend(
                             element_data)
@@ -125,24 +126,25 @@ def read_mesh(path: str) -> Mesh:
                         if element_set:
                             result['element_set_by_name'][element_set].add(
                                 element_number)
-                    if sanitized_line.endswith(','):
+                    if stripped_line.endswith(','):
                         previous_element_number = element_number
                 elif data_type_to_read == 'element_set':
-                    if ',' not in sanitized_line:
-                        if sanitized_line in result['element_set_by_name']:
-                            result['element_set_by_name'][element_set] = result['element_set_by_name'][sanitized_line]
+                    stripped_line = line.strip()
+                    if ',' not in stripped_line:
+                        if stripped_line in result['element_set_by_name']:
+                            result['element_set_by_name'][element_set] = result['element_set_by_name'][stripped_line]
                         else:
-                            element = int(sanitized_line)
+                            element = int(stripped_line)
                             result['element_set_by_name'][element_set].add(element)
                     else:
-                        parts = sanitized_line.split(',')
+                        parts = stripped_line.split(',')
                         if generate_element:
                             num_parts = len(parts)
                             if not 2 <= num_parts <= 3:
                                 raise_parser_error(
                                     'GENERATE data line must contain 2 or 3 elements.',
                                     line_num,
-                                    sanitized_line)
+                                    stripped_line)
                             if num_parts == 2:
                                 start = int(parts[0])
                                 end = int(parts[1])
@@ -176,7 +178,7 @@ def read_mesh(path: str) -> Mesh:
 def parse_node_data_line(node_data_line: str, line_num: int) -> Tuple[int, Tuple[float, float, float]]:
     """Parse a node from a node data line.
 
-    :param node_data_line: Sanitized node data line.
+    :param node_data_line: Node data line stripped of surrounding white-space.
     :param line_num: Line number.
     :raises ValueError: When number of comma-separated parts doesn't equal 4.
     :return: Two-element tuple containing node number,
@@ -188,19 +190,19 @@ def parse_node_data_line(node_data_line: str, line_num: int) -> Tuple[int, Tuple
             'Node must have 4 parts: number, 1st coord, 2nd coord, 3rd coord.',
             line_num,
             node_data_line)
-    sanitized_parts = sanitize_parts(parts)
-    node_number = sanitized_parts[0]
+    stripped_parts = strip_parts(parts)
+    node_number = stripped_parts[0]
     return int(node_number), (
-        float(sanitized_parts[1]),
-        float(sanitized_parts[2]),
-        float(sanitized_parts[3])
+        float(stripped_parts[1]),
+        float(stripped_parts[2]),
+        float(stripped_parts[3])
     )
 
 
 def parse_element_data_line(element_data_line: str, line_num: int) -> List[int]:
     """Parse element data from an element data line.
 
-    :param element_data_line: Sanitized element data line.
+    :param element_data_line: Element data line stripped of surrounding white-space.
     :param line_num: Line number.
     :raises ValueError: When number of comma-separated parts exceeds 16.
     :return: List of integers.
@@ -215,18 +217,7 @@ def parse_element_data_line(element_data_line: str, line_num: int) -> List[int]:
     return [int(part.strip() or 0) for part in parts]
 
 
-def sanitize_line(line: str) -> str:
-    """Sanitizes a line by removing surrounding white-space and upper-casing.
-
-    CalcluliX is case-insensitive.
-
-    :param line: Line from input file.
-    :return: Sanitized line.
-    """
-    return line.strip().upper()
-
-
-def sanitize_parts(parts: List[str]) -> List[str]:
+def strip_parts(parts: List[str]) -> List[str]:
     """Sanitizes parts of a line by removing surrounding white-space.
 
     CalcluliX is case-insensitive.
@@ -237,75 +228,75 @@ def sanitize_parts(parts: List[str]) -> List[str]:
     return [part.strip() for part in parts]
 
 
-def is_keyword(sanitized_line: str) -> bool:
+def is_keyword(uppercase_stripped_line: str) -> bool:
     """Checks if a sanitized line is a keyword definition.
 
     Keywords in CalculiX input files start with an asterisk '*',
     and comments start with two asterisks '**'.
 
-    :param sanitized_line: Upper-cased line without surrounding white-space.
+    :param uppercase_stripped_line: Upper-cased line without surrounding white-space.
     :return: True if the line is a keyword definition, False otherwise.
     """
     return (
-        sanitized_line.startswith('*') and not
-        sanitized_line.startswith('**')
+        uppercase_stripped_line.startswith('*') and not
+        uppercase_stripped_line.startswith('**')
     )
 
 
-def is_keyword_with_data(sanitized_line: str) -> bool:
+def is_keyword_with_data(uppercase_stripped_line: str) -> bool:
     """Checks if a sanitized line is a keyword definition.
 
     Keywords in CalculiX input files start with an asterisk '*',
     and comments start with two asterisks '**'.
 
-    :param sanitized_line: Upper-cased line without surrounding white-space.
+    :param uppercase_stripped_line: Upper-cased line without surrounding white-space.
     :return: True if the line is a keyword definition, False otherwise.
     """
     predicates = get_predicate_by_data_type().values()
-    return any([predicate(sanitized_line) for predicate in predicates])
+    return any([predicate(uppercase_stripped_line) for predicate in predicates])
 
 
-def is_node_definition(sanitized_line: str) -> bool:
+def is_node_definition(uppercase_stripped_line: str) -> bool:
     """Checks if a sanitized line is a node definition.
 
-    :param sanitized_line: Upper-cased line without surrounding white-space.
+    :param uppercase_stripped_line: Upper-cased line without surrounding white-space.
     :return: True if the line is a node definition, False otherwise.
     """
     return (
-        sanitized_line.startswith('*NODE') and not
+        uppercase_stripped_line.startswith('*NODE') and not
         (
-            sanitized_line.startswith('*NODE FILE') or
-            sanitized_line.startswith('*NODE OUTPUT') or
-            sanitized_line.startswith('*NODE PRINT')
+            uppercase_stripped_line.startswith('*NODE FILE') or
+            uppercase_stripped_line.startswith('*NODE OUTPUT') or
+            uppercase_stripped_line.startswith('*NODE PRINT')
         )
     )
 
 
-def is_element_definition(sanitized_line: str) -> bool:
+def is_element_definition(uppercase_stripped_line: str) -> bool:
     """Checks if a sanitized line is an element definition.
 
-    :param sanitized_line: Upper-cased line without surrounding white-space.
+    :param uppercase_stripped_line: Upper-cased line without surrounding white-space.
     :return: True if the line is an element definition, False otherwise.
     """
     return (
-        sanitized_line.startswith('*ELEMENT') and not
-        sanitized_line.startswith('*ELEMENT OUTPUT')
+        uppercase_stripped_line.startswith('*ELEMENT') and not
+        uppercase_stripped_line.startswith('*ELEMENT OUTPUT')
     )
 
 
-def is_element_set_definition(sanitized_line: str) -> bool:
+def is_element_set_definition(uppercase_stripped_line: str) -> bool:
     """Checks if a sanitized line is an element set definition.
 
-    :param sanitized_line: Upper-cased line without surrounding white-space.
+    :param uppercase_stripped_line: Upper-cased line without surrounding white-space.
     :return: True if the line is an element set definition, False otherwise.
     """
-    return sanitized_line.startswith('*ELSET')
+    return uppercase_stripped_line.startswith('*ELSET')
 
 
-def get_data_type(sanitized_keyword_line: str) -> str:
+def get_data_type(uppercase_stripped_line: str) -> str:
     predicate_by_data_type = get_predicate_by_data_type()
     for data_type, predicate in predicate_by_data_type.items():
-        if predicate(sanitized_keyword_line):
+        if predicate(uppercase_stripped_line):
             return data_type
 
 
@@ -317,24 +308,24 @@ def get_predicate_by_data_type() -> Dict[str, Callable[[str], bool]]:
     }
 
 
-def parse_keyword_line(sanitized_line: str) -> Tuple[str, dict]:
+def parse_keyword_line(stripped_line: str) -> Tuple[str, dict]:
     """Parses a keyword line for the keyword and any parameters.
 
     Parameters without an explicit value
     are returned in the dictionary with a value of True.
 
-    :param sanitized_line: Line without surrounding white-space.
+    :param stripped_line: Line without surrounding white-space.
     :return: Two element tuple containing keyword and parameters.
     """
     parameters = {}
-    if ',' not in sanitized_line:
-        return sanitized_line, parameters
-    parts = sanitized_line.split(',')
+    if ',' not in stripped_line:
+        return stripped_line, parameters
+    parts = stripped_line.split(',')
     keyword = parts[0]
     remaining_parts = parts[1:]
     for part in remaining_parts:
         if '=' in part:
-            key, value = sanitize_parts(part.split('='))
+            key, value = strip_parts(part.split('='))
             parameters[key] = value
         else:
             parameters[part] = True

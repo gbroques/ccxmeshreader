@@ -113,7 +113,7 @@ print(mesh['element_set_by_name'])
 ```
 ```
 {
-    'EALL': {1, 2}
+    'Eall': {1, 2}
 }
 ```
 
