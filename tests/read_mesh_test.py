@@ -68,9 +68,26 @@ class ReadMeshTest(unittest.TestCase):
 
         self.assertEqual(mesh['element_set_by_name']['Eall'], {1})
         self.assertEqual(mesh['element_set_by_name']['E1'], {1, 2, 3, 4, 5})
-        self.assertEqual(mesh['element_set_by_name']['E2'], {1, 2, 3, 4, 5, 6, 7})
+        self.assertEqual(mesh['element_set_by_name']
+                         ['E2'], {1, 2, 3, 4, 5, 6, 7})
         self.assertEqual(mesh['element_set_by_name']['E3'], {1, 3, 5, 7})
         self.assertEqual(mesh['element_set_by_name']['E4'], {20})
+
+    def test_read_mesh_with_engine(self):
+        path = os.path.join(os.path.abspath(
+            os.path.dirname(__file__)), 'engine.inp')
+
+        mesh = read_mesh(path)
+
+        self.assertDictEqual(mesh['node_coordinates_by_number'], {})
+        self.assertDictEqual(mesh['element_dict_by_type'], {})
+
+        self.assertSetEqual(
+            mesh['element_set_by_name']['SolidMaterialSolid'],
+            {42124, 42125, 42126, 42128, 42129, 42133, 42135, 42136, 42139, 42140})
+        self.assertSetEqual(
+            mesh['element_set_by_name']['SolidMaterial001Solid'],
+            {42144, 42146, 42152, 42122, 42123, 42127, 42130, 42131, 42132, 42134})
 
     def test_read_mesh_with_continuation_keyword_line_raises_parser_error(self):
         path = os.path.join(os.path.abspath(

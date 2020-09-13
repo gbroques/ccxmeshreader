@@ -67,6 +67,8 @@ def read_mesh(path: str) -> Mesh:
                 line = f.readline()
             stripped_line = line.strip()
             uppercase_stripped_line = stripped_line.upper()
+            if is_comment(stripped_line):
+                continue
             if (stripped_line == '' or is_keyword(uppercase_stripped_line)) and data_type_to_read:
                 data_type_to_read = ''
                 previous_element_number = None
@@ -129,7 +131,6 @@ def read_mesh(path: str) -> Mesh:
                     if stripped_line.endswith(','):
                         previous_element_number = element_number
                 elif data_type_to_read == 'element_set':
-                    stripped_line = line.strip()
                     if ',' not in stripped_line:
                         if stripped_line in result['element_set_by_name']:
                             result['element_set_by_name'][element_set] = result['element_set_by_name'][stripped_line]
@@ -159,6 +160,8 @@ def read_mesh(path: str) -> Mesh:
                                 result['element_set_by_name'][element_set] = elements
                             generate_element = False
                         else:
+                            if stripped_line.endswith(','):
+                                parts = parts[:-1]
                             for part in parts:
                                 if part in result['element_set_by_name']:
                                     if len(result['element_set_by_name'][element_set]) == 0:
@@ -218,7 +221,7 @@ def parse_element_data_line(element_data_line: str, line_num: int) -> List[int]:
 
 
 def strip_parts(parts: List[str]) -> List[str]:
-    """Sanitizes parts of a line by removing surrounding white-space.
+    """Strips parts of a line by removing surrounding white-space.
 
     CalcluliX is case-insensitive.
 
@@ -229,7 +232,7 @@ def strip_parts(parts: List[str]) -> List[str]:
 
 
 def is_keyword(uppercase_stripped_line: str) -> bool:
-    """Checks if a sanitized line is a keyword definition.
+    """Checks if a line is a keyword definition.
 
     Keywords in CalculiX input files start with an asterisk '*',
     and comments start with two asterisks '**'.
@@ -239,12 +242,24 @@ def is_keyword(uppercase_stripped_line: str) -> bool:
     """
     return (
         uppercase_stripped_line.startswith('*') and not
-        uppercase_stripped_line.startswith('**')
+        is_comment(uppercase_stripped_line)
     )
 
 
+def is_comment(stripped_line: str) -> bool:
+    """Checks if a line is a comment.
+
+    Keywords in CalculiX input files start with an asterisk '*',
+    and comments start with two asterisks '**'.
+
+    :param stripped_line: Line without surrounding white-space.
+    :return: True if the line is a keyword definition, False otherwise.
+    """
+    return stripped_line.startswith('**')
+
+
 def is_keyword_with_data(uppercase_stripped_line: str) -> bool:
-    """Checks if a sanitized line is a keyword definition.
+    """Checks if a line is a keyword definition.
 
     Keywords in CalculiX input files start with an asterisk '*',
     and comments start with two asterisks '**'.
@@ -257,7 +272,7 @@ def is_keyword_with_data(uppercase_stripped_line: str) -> bool:
 
 
 def is_node_definition(uppercase_stripped_line: str) -> bool:
-    """Checks if a sanitized line is a node definition.
+    """Checks if a line is a node definition.
 
     :param uppercase_stripped_line: Upper-cased line without surrounding white-space.
     :return: True if the line is a node definition, False otherwise.
@@ -273,7 +288,7 @@ def is_node_definition(uppercase_stripped_line: str) -> bool:
 
 
 def is_element_definition(uppercase_stripped_line: str) -> bool:
-    """Checks if a sanitized line is an element definition.
+    """Checks if a line is an element definition.
 
     :param uppercase_stripped_line: Upper-cased line without surrounding white-space.
     :return: True if the line is an element definition, False otherwise.
@@ -285,7 +300,7 @@ def is_element_definition(uppercase_stripped_line: str) -> bool:
 
 
 def is_element_set_definition(uppercase_stripped_line: str) -> bool:
-    """Checks if a sanitized line is an element set definition.
+    """Checks if a line is an element set definition.
 
     :param uppercase_stripped_line: Upper-cased line without surrounding white-space.
     :return: True if the line is an element set definition, False otherwise.
