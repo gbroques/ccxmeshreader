@@ -69,7 +69,7 @@ def read_mesh(path: str) -> Mesh:
             uppercase_stripped_line = stripped_line.upper()
             if is_comment(stripped_line):
                 continue
-            if (stripped_line == '' or is_keyword(uppercase_stripped_line)) and data_type_to_read:
+            if stripped_line == '' and data_type_to_read:
                 data_type_to_read = ''
                 previous_element_number = None
                 element_type = ''
