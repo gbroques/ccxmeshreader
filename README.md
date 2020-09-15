@@ -10,6 +10,8 @@
     * [*NODE](#node)
     * [*ELEMENT](#element)
     * [*ELSET](#elset)
+    * [*MATERIAL](#material)
+        * [*ELASTIC](#elastic)
     * [*INCLUDE](#include)
 * [Approach](#approach)
 * [Limitations](#limitations)
@@ -147,6 +149,64 @@ print(mesh['element_set_by_name'])
 }
 ```
 The optional `GENERATE` parameter is respected with start, end, and step.
+
+### *MATERIAL
+Materials are parsed and added to the dictionary returned by `read_mesh` in the `materials` key.
+
+The `materials` key contains a list of material dictionaries with properties depending upon subsequent material definition cards with the exception of the **required** `name` property.
+
+For example, given the following `*MATERIAL` definition:
+```
+*MATERIAL, NAME=SolidMaterial
+*ELASTIC
+210000, 0.300
+```
+```python
+mesh = read_mesh('example.inp')
+print(mesh['materials'])
+```
+```
+[
+    {
+        'name': 'SolidMaterial',
+        'elastic': {
+            'type': 'ISO',
+            'youngs_modulus': 210000,
+            'poissons_ratio': 0.300
+        }
+    }
+]
+```
+
+#### *ELASTIC
+Currently only elastic properties of type `ISO` are supported.
+
+`ORTHO`, `ENGINEERING CONSTANTS`, and `ANISO` types are ignored.
+
+For type `ISO`, the Young's modulus and Poisson's ratio are parsed and added under the `elastic` key in the material dictionary.
+
+For example, given the following `*MATERIAL` definition:
+```
+*MATERIAL, NAME=SolidMaterial
+*ELASTIC
+210000, 0.300
+```
+```python
+mesh = read_mesh('example.inp')
+print(mesh['materials'])
+```
+```
+[
+    {
+        'name': 'SolidMaterial',
+        'elastic': {
+            'type': 'ISO',
+            'youngs_modulus': 210000,
+            'poissons_ratio': 0.300
+        }
+    }
+]
+```
 
 ### *INCLUDE
 Files specified by the `*INCLUDE` keyword are read, but currently limited to relative file paths, and assumed to be relative to the path passed to `read_mesh`.

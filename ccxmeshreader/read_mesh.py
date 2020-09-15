@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 from typing import Callable, Dict, List, Set, Tuple
-
+import re
 from .parser_error import ParserError
 
 try:
@@ -40,7 +40,8 @@ def read_mesh(path: str) -> Mesh:
     result = {
         'node_coordinates_by_number': {},
         'element_dict_by_type': defaultdict(dict),
-        'element_set_by_name': defaultdict(set)
+        'element_set_by_name': defaultdict(set),
+        'materials': []
     }
     with open(path, 'r') as f:
         line_num = 1
@@ -53,6 +54,8 @@ def read_mesh(path: str) -> Mesh:
         generate_element = False
         include_file = None
         prev_line_num = None
+        # If None, then don't read keyword lines as part of current *MATERIAL definition.
+        material_index = None
 
         line = True
         while line:
@@ -89,26 +92,41 @@ def read_mesh(path: str) -> Mesh:
                         '*INCLUDE definition must have INPUT.',
                         line_num,
                         stripped_line)
-            elif is_keyword_with_data(uppercase_stripped_line):
-                if stripped_line.endswith(','):
+            elif uppercase_stripped_line.startswith('*MATERIAL'):
+                keyword, params = parse_keyword_line(stripped_line)
+                if 'NAME' not in params:
                     raise_parser_error(
-                        'Continuation of keyword lines not supported.',
+                        '*MATERIAL definition must have NAME.',
                         line_num,
                         stripped_line)
-                data_type_to_read = get_data_type(uppercase_stripped_line)
-                keyword, params = parse_keyword_line(stripped_line)
-                if 'ELSET' in params:
-                    element_set = params['ELSET']
-                if 'GENERATE' in params:
-                    generate_element = True
-                if data_type_to_read == 'element':
-                    try:
-                        element_type = params['TYPE']
-                    except KeyError:
+                material_index = len(result['materials'])
+                result['materials'].append({'name': params['NAME']})
+            elif is_keyword(uppercase_stripped_line):
+                if is_material_keyword(uppercase_stripped_line) and material_index is not None:
+                    keyword, params = parse_keyword_line(uppercase_stripped_line)
+                    if keyword == '*ELASTIC':
+                        elastic_type = 'ISO' if 'TYPE' not in params else params['TYPE']
+                        data_type_to_read = 'elastic:{}'.format(elastic_type)
+                elif is_keyword_with_data(uppercase_stripped_line):
+                    if stripped_line.endswith(','):
                         raise_parser_error(
-                            '*ELEMENT definition must have TYPE.',
+                            'Continuation of keyword lines not supported.',
                             line_num,
                             stripped_line)
+                    data_type_to_read = get_data_type(uppercase_stripped_line)
+                    keyword, params = parse_keyword_line(stripped_line)
+                    if 'ELSET' in params:
+                        element_set = params['ELSET']
+                    if 'GENERATE' in params:
+                        generate_element = True
+                    if data_type_to_read == 'element':
+                        try:
+                            element_type = params['TYPE']
+                        except KeyError:
+                            raise_parser_error(
+                                '*ELEMENT definition must have TYPE.',
+                                line_num,
+                                stripped_line)
             elif data_type_to_read:
                 if data_type_to_read == 'node':
                     node_number, coordinates = parse_node_data_line(
@@ -136,7 +154,8 @@ def read_mesh(path: str) -> Mesh:
                             result['element_set_by_name'][element_set] = result['element_set_by_name'][stripped_line]
                         else:
                             element = int(stripped_line)
-                            result['element_set_by_name'][element_set].add(element)
+                            result['element_set_by_name'][element_set].add(
+                                element)
                     else:
                         parts = stripped_line.split(',')
                         if generate_element:
@@ -174,6 +193,20 @@ def read_mesh(path: str) -> Mesh:
                                     element = int(part)
                                     result['element_set_by_name'][element_set].add(
                                         element)
+                elif data_type_to_read.startswith('elastic'):
+                    elastic_type = data_type_to_read.split(':')[1]
+                    result['materials'][material_index]['elastic'] = {}
+                    if elastic_type == 'ISO':
+                        parts = stripped_line.split(',')
+                        if len(parts) < 2:
+                            raise_parser_error(
+                                '*ELASTIC definition for ISO material must define Young\'s modulus and Poisson\'s ratio.',
+                                line_num,
+                                stripped_line)
+                        result['materials'][material_index]['elastic']['type'] = 'ISO'
+                        result['materials'][material_index]['elastic']['youngs_modulus'] = float(parts[0])
+                        result['materials'][material_index]['elastic']['poissons_ratio'] = float(parts[1])
+                    data_type_to_read = ''
             line_num += 1
     return result
 
@@ -231,7 +264,22 @@ def strip_parts(parts: List[str]) -> List[str]:
     return [part.strip() for part in parts]
 
 
-def is_keyword(uppercase_stripped_line: str) -> bool:
+def is_keyword(stripped_line: str) -> bool:
+    """Checks if a line is a keyword definition.
+
+    Keywords in CalculiX input files start with an asterisk '*',
+    and comments start with two asterisks '**'.
+
+    :param stripped_line: Line without surrounding white-space.
+    :return: True if the line is a keyword definition, False otherwise.
+    """
+    return (
+        stripped_line.startswith('*') and not
+        is_comment(stripped_line)
+    )
+
+
+def is_material_keyword(uppercase_stripped_line: str) -> bool:
     """Checks if a line is a keyword definition.
 
     Keywords in CalculiX input files start with an asterisk '*',
@@ -240,10 +288,32 @@ def is_keyword(uppercase_stripped_line: str) -> bool:
     :param uppercase_stripped_line: Upper-cased line without surrounding white-space.
     :return: True if the line is a keyword definition, False otherwise.
     """
-    return (
-        uppercase_stripped_line.startswith('*') and not
-        is_comment(uppercase_stripped_line)
-    )
+    if not is_keyword(uppercase_stripped_line):
+        return False
+    keyword, params = parse_keyword_line(uppercase_stripped_line)
+    keyword_no_whitespace = remove_whitespace(keyword)
+    return keyword_no_whitespace in [
+        '*CONDUCTIVITY',
+        '*CREEP',
+        '*DEFORMATIONPLASTICITY',
+        '*DEPVAR',
+        '*ELASTIC',
+        '*ELECTRICALCONDUCTIVITY',
+        '*EXPANSION',
+        '*FLUIDCONSTANTS',
+        '*HYPERELASTIC',
+        '*HYPERFOAM',
+        '*MAGNETICPERMEABILITY',
+        '*PLASTIC',
+        '*SPECIFICGASCONSTANT',
+        '*SPECIFICHEAT',
+        '*USERMATERIAL'
+    ]
+
+
+def remove_whitespace(string: str) -> str:
+    whitespace_pattern = re.compile(r'\s')
+    return re.sub(whitespace_pattern, '', string)
 
 
 def is_comment(stripped_line: str) -> bool:
@@ -331,6 +401,7 @@ def parse_keyword_line(stripped_line: str) -> Tuple[str, dict]:
 
     :param stripped_line: Line without surrounding white-space.
     :return: Two element tuple containing keyword and parameters.
+             Parameter keys are upper-cased.
     """
     parameters = {}
     if ',' not in stripped_line:
@@ -341,7 +412,7 @@ def parse_keyword_line(stripped_line: str) -> Tuple[str, dict]:
     for part in remaining_parts:
         if '=' in part:
             key, value = strip_parts(part.split('='))
-            parameters[key] = value
+            parameters[key.upper()] = value
         else:
             parameters[part] = True
     return keyword, parameters

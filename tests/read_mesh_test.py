@@ -46,6 +46,12 @@ class ReadMeshTest(unittest.TestCase):
         self.assertTrue(mesh['element_set_by_name']['SolidMaterialElementGeometry2D']
                         == mesh['element_set_by_name']['Efaces'])
 
+        self.assertEqual(len(mesh['materials']), 1)
+        self.assertEqual(mesh['materials'][0]['name'], 'SolidMaterial')
+        self.assertEqual(mesh['materials'][0]['elastic']['type'], 'ISO')
+        self.assertEqual(mesh['materials'][0]['elastic']['youngs_modulus'], 210000)
+        self.assertEqual(mesh['materials'][0]['elastic']['poissons_ratio'], 0.300)
+
     def test_read_mesh_with_continuation_line_element_data(self):
         path = os.path.join(os.path.abspath(
             os.path.dirname(__file__)), 'continuation-line-element.inp')
@@ -73,6 +79,12 @@ class ReadMeshTest(unittest.TestCase):
         self.assertEqual(mesh['element_set_by_name']['E3'], {1, 3, 5, 7})
         self.assertEqual(mesh['element_set_by_name']['E4'], {20})
 
+        self.assertEqual(len(mesh['materials']), 1)
+        self.assertEqual(mesh['materials'][0]['name'], 'EL')
+        self.assertEqual(mesh['materials'][0]['elastic']['type'], 'ISO')
+        self.assertEqual(mesh['materials'][0]['elastic']['youngs_modulus'], 210000)
+        self.assertEqual(mesh['materials'][0]['elastic']['poissons_ratio'], 0.300)
+
     def test_read_mesh_with_engine(self):
         path = os.path.join(os.path.abspath(
             os.path.dirname(__file__)), 'engine.inp')
@@ -89,14 +101,35 @@ class ReadMeshTest(unittest.TestCase):
             mesh['element_set_by_name']['SolidMaterial001Solid'],
             {42144, 42146, 42152, 42122, 42123, 42127, 42130, 42131, 42132, 42134})
 
+        self.assertEqual(len(mesh['materials']), 2)
+
+        self.assertEqual(mesh['materials'][0]['name'], 'SolidMaterial')
+        self.assertEqual(mesh['materials'][0]['elastic']['type'], 'ISO')
+        self.assertEqual(mesh['materials'][0]['elastic']['youngs_modulus'], 114000)
+        self.assertEqual(mesh['materials'][0]['elastic']['poissons_ratio'], 0.330)
+
+        self.assertEqual(mesh['materials'][1]['name'], 'SolidMaterial001')
+        self.assertEqual(mesh['materials'][1]['elastic']['type'], 'ISO')
+        self.assertEqual(mesh['materials'][1]['elastic']['youngs_modulus'], 114000)
+        self.assertEqual(mesh['materials'][1]['elastic']['poissons_ratio'], 0.330)
+
     def test_read_mesh_with_continuation_keyword_line_raises_parser_error(self):
         path = os.path.join(os.path.abspath(
             os.path.dirname(__file__)), 'continuation-keyword-line.inp')
 
         with self.assertRaises(ParserError) as context:
             read_mesh(path)
-            self.assertEqual(
-                'Continuation of keyword lines not supported.', context.exception)
+        self.assertTrue(str(context.exception).startswith(
+            'Continuation of keyword lines not supported.'))
+
+    def test_read_mesh_with_iso_material_without_poissons_ratio_raises_parser_error(self):
+        path = os.path.join(os.path.abspath(
+            os.path.dirname(__file__)), 'iso-elastic-without-poissons-ratio.inp')
+
+        with self.assertRaises(ParserError) as context:
+            read_mesh(path)
+        self.assertTrue(str(context.exception).startswith(
+            '*ELASTIC definition for ISO material must define Young\'s modulus and Poisson\'s ratio.'))
 
 
 if __name__ == '__main__':
