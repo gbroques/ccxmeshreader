@@ -102,17 +102,17 @@ def read_mesh(path: str) -> Mesh:
                 material_index = len(result['materials'])
                 result['materials'].append({'name': params['NAME']})
             elif is_keyword(uppercase_stripped_line):
+                if stripped_line.endswith(','):
+                    raise_parser_error(
+                        'Continuation of keyword lines not supported.',
+                        line_num,
+                        stripped_line)
                 if is_material_keyword(uppercase_stripped_line) and material_index is not None:
                     keyword, params = parse_keyword_line(uppercase_stripped_line)
                     if keyword == '*ELASTIC':
                         elastic_type = 'ISO' if 'TYPE' not in params else params['TYPE']
                         data_type_to_read = 'elastic:{}'.format(elastic_type)
                 elif is_keyword_with_data(uppercase_stripped_line):
-                    if stripped_line.endswith(','):
-                        raise_parser_error(
-                            'Continuation of keyword lines not supported.',
-                            line_num,
-                            stripped_line)
                     data_type_to_read = get_data_type(uppercase_stripped_line)
                     keyword, params = parse_keyword_line(stripped_line)
                     if 'ELSET' in params:
